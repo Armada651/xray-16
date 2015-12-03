@@ -9,6 +9,7 @@ v2p_TL _main ( v_TL I )
 
 	O.HPos = I.P;
 	O.Tex0 = I.Tex0;
+	O.Tex0.y = 1 - O.Tex0.y;
 	//	Some shaders that use this stub don't need Color at all
 	O.Color = I.Color.bgra;	//	swizzle vertex colour
 

@@ -20,9 +20,13 @@ v2p_build _main ( v_build I )
 	}
 
 	O.Tex0 = I.Tex0;
+	O.Tex0.y = 1 - O.Tex0.y;
 	O.Tex1 = I.Tex1;
+	O.Tex1.y = 1 - O.Tex1.y;
 	O.Tex2 = I.Tex2;
+	O.Tex2.y = 1 - O.Tex2.y;
 	O.Tex3 = I.Tex3;
+	O.Tex3.y = 1 - O.Tex3.y;
 
  	return O;
 }

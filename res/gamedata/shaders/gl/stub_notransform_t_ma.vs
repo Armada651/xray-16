@@ -17,6 +17,7 @@ v2p_TL _main ( v_TL I )
 	}
 
 	O.Tex0 = I.Tex0;
+	O.Tex0.y = 1 - O.Tex0.y;
 	O.Color = I.Color.aaaa;	//	swizzle vertex colour
 
  	return O;
