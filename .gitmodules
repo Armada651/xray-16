@@ -1,6 +1,6 @@
-[submodule "src/Externals/glbinding"]
-	path = src/Externals/glbinding
-	url = https://github.com/cginternals/glbinding.git
 [submodule "src/Externals/gli"]
 	path = src/Externals/gli
 	url = https://github.com/g-truc/gli
+[submodule "src/Externals/glew"]
+	path = src/Externals/glew
+	url = https://github.com/Armada651/glew.git
