@@ -24,6 +24,8 @@
 #include <D3Dx11core.h>
 #include <D3DCompiler.h>
 
+#include <vulkan/vulkan.h>
+
 #include "Layers/xrRender/xrD3DDefs.h"
 
 #include "Layers/xrRender/Debug/dxPixEventWrapper.h"
@@ -51,7 +53,7 @@
 #include "Layers/xrRender/blenders\blender.h"
 #include "Layers/xrRender/blenders\blender_clsid.h"
 #include "Layers/xrRender/xrRender_console.h"
-#include "r4.h"
+#include "Layers/xrRenderPC_R4/r4.h"
 
 IC	void	jitter(CBlender_Compile& C)
 {

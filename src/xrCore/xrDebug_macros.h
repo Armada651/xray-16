@@ -87,13 +87,12 @@
         if (!ignoreAlways && FAILED(hr))\
             xrDebug::Fail(ignoreAlways, DEBUG_INFO, #expr, hr);\
     } while (false)
-#define CHK_GL(expr)\
+#define CHK_VK(expr)\
     do {\
         static bool ignoreAlways = false;\
-        expr;\
-        GLenum err = glGetError();\
-        if (!ignoreAlways && err!=GL_NO_ERROR)\
-            xrDebug::Fail(ignoreAlways, DEBUG_INFO, #expr, (long)err);\
+        VkResult res = expr;\
+        if (!ignoreAlways && res!=VK_SUCCESS)\
+            xrDebug::Fail(ignoreAlways, DEBUG_INFO, #expr, (long)res);\
     } while (false)
 #else // DEBUG
 #ifdef __BORLANDC__
@@ -106,7 +105,7 @@
 #define VERIFY3(expr, desc, arg1) do {} while (false)
 #define VERIFY4(expr, desc, arg1, arg2) do {} while (false)
 #define CHK_DX(expr) expr
-#define CHK_GL(expr) expr
+#define CHK_VK(expr) expr
 #endif // DEBUG
 //---------------------------------------------------------------------------------------------
 // FIXMEs / TODOs / NOTE macros
