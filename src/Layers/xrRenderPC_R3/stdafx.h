@@ -29,11 +29,12 @@
 #include "Layers/xrRender/xrD3DDefs.h"
 #include "Layers/xrRender/Debug/dxPixEventWrapper.h"
 
-#define R_R1 1
-#define R_R2 2
-#define R_R3 3
-#define R_R4 4
-#define RENDER R_R3
+#define		R_R1	1
+#define		R_R2	2
+#define		R_R3	3
+#define		R_R4	4
+#define		R_R5	5
+#define		RENDER	R_R3
 
 #include "xrParticles/psystem.h"
 #include "Layers/xrRender/HW.h"

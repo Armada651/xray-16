@@ -186,6 +186,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oalib", "Externals\OpenAuto
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cryptlib", "Externals\cryptlib.vcxproj", "{C39F4B46-6E89-4074-902E-CA57073044D2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xrRender_R5", "Layers\xrRenderPC_R5\xrRenderPC_R5.vcxproj", "{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_Dedicated|Win32 = Debug_Dedicated|Win32
@@ -913,6 +915,18 @@ Global
 		{C39F4B46-6E89-4074-902E-CA57073044D2}.Release_Dedicated|Win32.Build.0 = Release|Win32
 		{C39F4B46-6E89-4074-902E-CA57073044D2}.Release|Win32.ActiveCfg = Release|Win32
 		{C39F4B46-6E89-4074-902E-CA57073044D2}.Release|Win32.Build.0 = Release|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Debug_Dedicated|Win32.ActiveCfg = Debug|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Debug_Dedicated|Win32.Build.0 = Debug|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Debug|Win32.Build.0 = Debug|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Mixed_Dedicated|Win32.ActiveCfg = Release|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Mixed_Dedicated|Win32.Build.0 = Release|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Mixed|Win32.ActiveCfg = Release|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Mixed|Win32.Build.0 = Release|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Release_Dedicated|Win32.ActiveCfg = Release|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Release_Dedicated|Win32.Build.0 = Release|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Release|Win32.ActiveCfg = Release|Win32
+		{E4F3C651-E905-4BC2-ABD8-12B0F3EA7661}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
