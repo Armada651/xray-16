@@ -20,7 +20,10 @@ typedef	VkFilter						D3D_FILTER;
 typedef VkSamplerCreateInfo						D3D_SAMPLER_DESC;
 typedef VkPipelineRasterizationStateCreateInfo	D3D_RASTERIZER_DESC;
 typedef VkPipelineDepthStencilStateCreateInfo	D3D_DEPTH_STENCIL_DESC;
-typedef VkPipelineColorBlendStateCreateInfo		D3D_BLEND_DESC;
+typedef struct {
+	VkPipelineColorBlendStateCreateInfo Info;
+	VkPipelineColorBlendAttachmentState RenderTarget[8];
+} D3D_BLEND_DESC;
 
 typedef VkDeviceMemory					D3D_SUBRESOURCE_DATA;
 
@@ -39,10 +42,10 @@ typedef VkPrimitiveTopology					D3D_PRIMITIVE_TOPOLOGY;
 typedef	VkViewport							D3D_VIEWPORT;
 typedef	VkImageUsageFlagBits				D3D_USAGE;
 
-typedef VkPipeline								ID3DRasterizerState;
-typedef VkPipeline								ID3DDepthStencilState;
-typedef VkPipeline								ID3DBlendState;
-typedef VkSampler								ID3DSamplerState;
+typedef D3D_RASTERIZER_DESC						ID3DRasterizerState;
+typedef D3D_DEPTH_STENCIL_DESC					ID3DDepthStencilState;
+typedef D3D_BLEND_DESC							ID3DBlendState;
+typedef D3D_SAMPLER_DESC						ID3DSamplerState;
 typedef VkBuffer								ID3DBuffer;
 typedef VkBuffer								ID3DVertexBuffer;
 typedef VkBuffer								ID3DIndexBuffer;
@@ -770,5 +773,9 @@ typedef	ID3D10ShaderReflectionType						ID3DShaderReflectionType;
 
 #endif
 
+#ifdef USE_VK
+typedef	vkState					ID3DState;
+#else
 typedef	dx10State				ID3DState;
+#endif
 #define DX10_ONLY(expr)			expr

@@ -210,23 +210,21 @@ void ResetDescription( D3D_DEPTH_STENCIL_DESC &desc )
 void ResetDescription( D3D_BLEND_DESC &desc )
 {
 	ZeroMemory(&desc, sizeof(desc));
-	desc.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	desc.Info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	desc.Info.attachmentCount = 8;
+	desc.Info.pAttachments = desc.RenderTarget;
 
-	desc.logicOpEnable = VK_FALSE;
-	desc.logicOp = VK_LOGIC_OP_NO_OP;
-
-	VkPipelineColorBlendAttachmentState att;
-	att.srcColorBlendFactor = D3D_BLEND_ONE;
-	att.dstColorBlendFactor = D3D_BLEND_ZERO;
-	att.colorBlendOp = D3D_BLEND_OP_ADD;
-	att.srcAlphaBlendFactor = D3D_BLEND_ONE;
-	att.dstAlphaBlendFactor = D3D_BLEND_ZERO;
-	att.alphaBlendOp = D3D_BLEND_OP_ADD;
-	att.blendEnable = VK_FALSE;
-	att.colorWriteMask = D3D_COLOR_WRITE_ENABLE_ALL;
-
-	for (int i = 0; i<desc.attachmentCount; ++i)
-		memcpy((void*)(desc.pAttachments + i), &att, sizeof(att));
+	for (int i = 0; i<8; ++i)
+	{
+		desc.RenderTarget[i].srcColorBlendFactor = D3D_BLEND_ONE;
+		desc.RenderTarget[i].dstColorBlendFactor = D3D_BLEND_ZERO;
+		desc.RenderTarget[i].colorBlendOp = D3D_BLEND_OP_ADD;
+		desc.RenderTarget[i].srcAlphaBlendFactor = D3D_BLEND_ONE;
+		desc.RenderTarget[i].dstAlphaBlendFactor = D3D_BLEND_ZERO;
+		desc.RenderTarget[i].alphaBlendOp = D3D_BLEND_OP_ADD;
+		desc.RenderTarget[i].blendEnable = FALSE;
+		desc.RenderTarget[i].colorWriteMask = D3D_COLOR_WRITE_ENABLE_ALL;
+	}
 }
 
 void ResetDescription( D3D_SAMPLER_DESC &desc )
@@ -294,20 +292,20 @@ bool operator==(const D3D_DEPTH_STENCIL_DESC &desc1, const D3D_DEPTH_STENCIL_DES
 
 bool operator==(const D3D_BLEND_DESC &desc1, const D3D_BLEND_DESC &desc2)
 {
-	if ( desc1.logicOpEnable != desc2.logicOpEnable) return false;
-	if ( desc1.logicOp != desc2.logicOp) return false;
-	if ( desc1.attachmentCount != desc2.attachmentCount) return false;
-	
-	for ( int i=0; i<desc1.attachmentCount && i<desc2.attachmentCount; ++i)
+	if ( desc1.Info.logicOpEnable != desc2.Info.logicOpEnable) return false;
+	if ( desc1.Info.logicOp != desc2.Info.logicOp) return false;
+	if ( desc1.Info.attachmentCount != desc2.Info.attachmentCount) return false;
+
+	for (int i = 0; i<4/*8*//*It's quick fix for dx11 port because of mispatch of desc*/; ++i)
 	{
-		if ( desc1.pAttachments[i].srcColorBlendFactor != desc2.pAttachments[i].srcColorBlendFactor) return false;
-		if ( desc1.pAttachments[i].dstColorBlendFactor != desc2.pAttachments[i].dstColorBlendFactor) return false;
-		if ( desc1.pAttachments[i].colorBlendOp != desc2.pAttachments[i].colorBlendOp) return false;
-		if ( desc1.pAttachments[i].srcAlphaBlendFactor != desc2.pAttachments[i].srcAlphaBlendFactor) return false;
-		if ( desc1.pAttachments[i].dstAlphaBlendFactor != desc2.pAttachments[i].dstAlphaBlendFactor) return false;
-		if ( desc1.pAttachments[i].alphaBlendOp != desc2.pAttachments[i].alphaBlendOp) return false;
-		if ( desc1.pAttachments[i].blendEnable != desc2.pAttachments[i].blendEnable) return false;
-		if ( desc1.pAttachments[i].colorWriteMask != desc2.pAttachments[i].colorWriteMask) return false;
+		if ( desc1.RenderTarget[i].srcColorBlendFactor != desc2.RenderTarget[i].srcColorBlendFactor) return false;
+		if ( desc1.RenderTarget[i].dstColorBlendFactor != desc2.RenderTarget[i].dstColorBlendFactor) return false;
+		if ( desc1.RenderTarget[i].colorBlendOp != desc2.RenderTarget[i].colorBlendOp) return false;
+		if ( desc1.RenderTarget[i].srcAlphaBlendFactor != desc2.RenderTarget[i].srcAlphaBlendFactor) return false;
+		if ( desc1.RenderTarget[i].dstAlphaBlendFactor != desc2.RenderTarget[i].dstAlphaBlendFactor) return false;
+		if ( desc1.RenderTarget[i].alphaBlendOp != desc2.RenderTarget[i].alphaBlendOp) return false;
+		if ( desc1.RenderTarget[i].blendEnable != desc2.RenderTarget[i].blendEnable) return false;
+		if ( desc1.RenderTarget[i].colorWriteMask != desc2.RenderTarget[i].colorWriteMask) return false;
 	}
 
 	return true;
@@ -335,90 +333,79 @@ bool operator==(const D3D_SAMPLER_DESC &desc1, const D3D_SAMPLER_DESC &desc2)
 	return true;
 }
 
-u32 GetHash( const D3D_RASTERIZER_DESC &desc )
+void GetHash( dxHashHelper &Hash, const D3D_RASTERIZER_DESC &desc )
 {
-	dxHashHelper	Hash;
+	Hash.AddData( &desc.polygonMode, sizeof(desc.polygonMode) );
+	Hash.AddData( &desc.cullMode, sizeof(desc.cullMode) );
+	Hash.AddData( &desc.frontFace, sizeof(desc.frontFace) );
+	Hash.AddData( &desc.depthBiasEnable, sizeof(desc.depthBiasEnable) );
+	Hash.AddData( &desc.depthBiasConstantFactor, sizeof(desc.depthBiasConstantFactor) );
+	Hash.AddData( &desc.depthBiasClamp, sizeof(desc.depthBiasClamp) );
+	Hash.AddData( &desc.depthBiasSlopeFactor, sizeof(desc.depthBiasSlopeFactor) );
+	Hash.AddData( &desc.lineWidth, sizeof(desc.lineWidth) );
+	Hash.AddData( &desc.depthClampEnable, sizeof(desc.depthClampEnable) );
+	Hash.AddData( &desc.rasterizerDiscardEnable, sizeof(desc.rasterizerDiscardEnable) );
+}
 
-	Hash.AddData( &desc.FillMode, sizeof(desc.FillMode) );
-	Hash.AddData( &desc.CullMode, sizeof(desc.CullMode) );
-	Hash.AddData( &desc.FrontCounterClockwise, sizeof(desc.FrontCounterClockwise) );
-	Hash.AddData( &desc.DepthBias, sizeof(desc.DepthBias) );
-	Hash.AddData( &desc.DepthBiasClamp, sizeof(desc.DepthBiasClamp) );
-	Hash.AddData( &desc.SlopeScaledDepthBias, sizeof(desc.SlopeScaledDepthBias) );
-	Hash.AddData( &desc.DepthClipEnable, sizeof(desc.DepthClipEnable) );
-	Hash.AddData( &desc.ScissorEnable, sizeof(desc.ScissorEnable) );
-	Hash.AddData( &desc.MultisampleEnable, sizeof(desc.MultisampleEnable) );
-	Hash.AddData( &desc.AntialiasedLineEnable, sizeof(desc.AntialiasedLineEnable) );
+void GetHash( dxHashHelper &Hash, const D3D_DEPTH_STENCIL_DESC &desc )
+{
+	Hash.AddData( &desc.depthTestEnable, sizeof(desc.depthTestEnable) );
+	Hash.AddData( &desc.depthWriteEnable, sizeof(desc.depthWriteEnable) );
+	Hash.AddData( &desc.depthCompareOp, sizeof(desc.depthCompareOp) );
+	Hash.AddData( &desc.depthBoundsTestEnable, sizeof(desc.depthBoundsTestEnable) );
+	Hash.AddData( &desc.stencilTestEnable, sizeof(desc.stencilTestEnable) );
 	
-	return Hash.GetHash();
+	Hash.AddData( &desc.front.compareMask, sizeof(desc.front.compareMask) );
+	Hash.AddData( &desc.front.writeMask, sizeof(desc.front.writeMask) );
+	Hash.AddData( &desc.front.failOp, sizeof(desc.front.failOp) );
+	Hash.AddData( &desc.front.depthFailOp, sizeof(desc.front.depthFailOp) );
+	Hash.AddData( &desc.front.passOp, sizeof(desc.front.passOp) );
+	Hash.AddData( &desc.front.compareOp, sizeof(desc.front.compareOp) );
+	
+	Hash.AddData( &desc.back.compareMask, sizeof(desc.back.compareMask) );
+	Hash.AddData( &desc.back.writeMask, sizeof(desc.back.writeMask) );
+	Hash.AddData( &desc.back.failOp, sizeof(desc.back.failOp) );
+	Hash.AddData( &desc.back.depthFailOp, sizeof(desc.back.depthFailOp) );
+	Hash.AddData( &desc.back.passOp, sizeof(desc.back.passOp) );
+	Hash.AddData( &desc.back.compareOp, sizeof(desc.back.compareOp) );
 }
 
-u32 GetHash( const D3D_DEPTH_STENCIL_DESC &desc )
+void GetHash( dxHashHelper &Hash, const D3D_BLEND_DESC &desc )
 {
-	dxHashHelper	Hash;
-
-	Hash.AddData( &desc.DepthEnable, sizeof(desc.DepthEnable) );
-	Hash.AddData( &desc.DepthWriteMask, sizeof(desc.DepthWriteMask) );
-	Hash.AddData( &desc.DepthFunc, sizeof(desc.DepthFunc) );
-	Hash.AddData( &desc.StencilEnable, sizeof(desc.StencilEnable) );
-	Hash.AddData( &desc.StencilReadMask, sizeof(desc.StencilReadMask) );
-	Hash.AddData( &desc.StencilWriteMask, sizeof(desc.StencilWriteMask) );
-
-	Hash.AddData( &desc.FrontFace.StencilFailOp, sizeof(desc.FrontFace.StencilFailOp) );
-	Hash.AddData( &desc.FrontFace.StencilDepthFailOp, sizeof(desc.FrontFace.StencilDepthFailOp) );
-	Hash.AddData( &desc.FrontFace.StencilPassOp, sizeof(desc.FrontFace.StencilPassOp) );
-	Hash.AddData( &desc.FrontFace.StencilFunc, sizeof(desc.FrontFace.StencilFunc) );
-
-	Hash.AddData( &desc.BackFace.StencilFailOp, sizeof(desc.BackFace.StencilFailOp) );
-	Hash.AddData( &desc.BackFace.StencilDepthFailOp, sizeof(desc.BackFace.StencilDepthFailOp) );
-	Hash.AddData( &desc.BackFace.StencilPassOp, sizeof(desc.BackFace.StencilPassOp) );
-	Hash.AddData( &desc.BackFace.StencilFunc, sizeof(desc.BackFace.StencilFunc) );
-
-	return Hash.GetHash();
-}
-
-u32 GetHash( const D3D_BLEND_DESC &desc )
-{
-	dxHashHelper	Hash;
-
-	Hash.AddData( &desc.AlphaToCoverageEnable, sizeof(desc.AlphaToCoverageEnable) );
-	Hash.AddData( &desc.IndependentBlendEnable, sizeof(desc.IndependentBlendEnable) );
+	Hash.AddData( &desc.Info.attachmentCount, sizeof(desc.Info.attachmentCount) );
+	Hash.AddData( desc.Info.blendConstants, sizeof(desc.Info.blendConstants) );
 
 	for ( int i=0; i<8; ++i)
 	{
-		Hash.AddData( &desc.RenderTarget[i].SrcBlend, sizeof(desc.RenderTarget[i].SrcBlend) );
-		Hash.AddData( &desc.RenderTarget[i].DestBlend, sizeof(desc.RenderTarget[i].DestBlend) );
-		Hash.AddData( &desc.RenderTarget[i].BlendOp, sizeof(desc.RenderTarget[i].BlendOp) );
-		Hash.AddData( &desc.RenderTarget[i].SrcBlendAlpha, sizeof(desc.RenderTarget[i].SrcBlendAlpha) );
-		Hash.AddData( &desc.RenderTarget[i].DestBlendAlpha, sizeof(desc.RenderTarget[i].DestBlendAlpha) );
-		Hash.AddData( &desc.RenderTarget[i].BlendOpAlpha, sizeof(desc.RenderTarget[i].BlendOpAlpha) );
-		Hash.AddData( &desc.RenderTarget[i].BlendEnable, sizeof(desc.RenderTarget[i].BlendEnable) );
-		Hash.AddData( &desc.RenderTarget[i].RenderTargetWriteMask, sizeof(desc.RenderTarget[i].RenderTargetWriteMask) );
+		Hash.AddData( &desc.RenderTarget[i].srcColorBlendFactor, sizeof(desc.RenderTarget[i].srcColorBlendFactor) );
+		Hash.AddData( &desc.RenderTarget[i].dstColorBlendFactor, sizeof(desc.RenderTarget[i].dstColorBlendFactor) );
+		Hash.AddData( &desc.RenderTarget[i].colorBlendOp, sizeof(desc.RenderTarget[i].colorBlendOp) );
+		Hash.AddData( &desc.RenderTarget[i].srcAlphaBlendFactor, sizeof(desc.RenderTarget[i].srcAlphaBlendFactor) );
+		Hash.AddData( &desc.RenderTarget[i].dstAlphaBlendFactor, sizeof(desc.RenderTarget[i].dstAlphaBlendFactor) );
+		Hash.AddData( &desc.RenderTarget[i].alphaBlendOp, sizeof(desc.RenderTarget[i].alphaBlendOp) );
+		Hash.AddData( &desc.RenderTarget[i].blendEnable, sizeof(desc.RenderTarget[i].blendEnable) );
+		Hash.AddData( &desc.RenderTarget[i].colorWriteMask, sizeof(desc.RenderTarget[i].colorWriteMask) );
 	}
-
-	return Hash.GetHash();
 }
 
-u32 GetHash( const D3D_SAMPLER_DESC &desc )
+void GetHash( dxHashHelper &Hash, const D3D_SAMPLER_DESC &desc )
 {
-	dxHashHelper	Hash;
-
-	Hash.AddData( &desc.Filter, sizeof(desc.Filter) );
-	Hash.AddData( &desc.AddressU, sizeof(desc.AddressU) );
-	Hash.AddData( &desc.AddressV, sizeof(desc.AddressV) );
-	Hash.AddData( &desc.AddressW, sizeof(desc.AddressW) );
-	Hash.AddData( &desc.MipLODBias, sizeof(desc.MipLODBias) );
+	Hash.AddData( &desc.minFilter, sizeof(desc.minFilter) );
+	Hash.AddData( &desc.magFilter, sizeof(desc.magFilter) );
+	Hash.AddData( &desc.mipmapMode, sizeof(desc.mipmapMode) );
+	Hash.AddData( &desc.addressModeU, sizeof(desc.addressModeU) );
+	Hash.AddData( &desc.addressModeV, sizeof(desc.addressModeV) );
+	Hash.AddData( &desc.addressModeW, sizeof(desc.addressModeW) );
+	Hash.AddData( &desc.mipLodBias, sizeof(desc.mipLodBias) );
 //	Ignore anisotropy since it's set up automatically by the manager
-//	Hash.AddData( &desc.MaxAnisotropy, sizeof(desc.MaxAnisotropy) );
-	Hash.AddData( &desc.ComparisonFunc, sizeof(desc.ComparisonFunc) );
-	Hash.AddData( &desc.BorderColor[0], sizeof(desc.BorderColor[0]) );
-	Hash.AddData( &desc.BorderColor[1], sizeof(desc.BorderColor[1]) );
-	Hash.AddData( &desc.BorderColor[2], sizeof(desc.BorderColor[2]) );
-	Hash.AddData( &desc.BorderColor[3], sizeof(desc.BorderColor[3]) );
-	Hash.AddData( &desc.MinLOD, sizeof(desc.MinLOD) );
-	Hash.AddData( &desc.MaxLOD, sizeof(desc.MaxLOD) );
-
-	return Hash.GetHash();
+//	Hash.AddData( &desc.anisotropyEnable, sizeof(desc.anisotropyEnable) );
+//	Hash.AddData( &desc.maxAnisotropy, sizeof(desc.maxAnisotropy) );
+	Hash.AddData( &desc.compareEnable, sizeof(desc.compareEnable) );
+	Hash.AddData( &desc.compareOp, sizeof(desc.compareOp) );
+	Hash.AddData( &desc.borderColor, sizeof(desc.borderColor) );
+	Hash.AddData( &desc.minLod, sizeof(desc.minLod) );
+	Hash.AddData( &desc.maxLod, sizeof(desc.maxLod) );
+	Hash.AddData( &desc.unnormalizedCoordinates, sizeof(desc.unnormalizedCoordinates) );
 }
 
 void ValidateState(D3D_RASTERIZER_DESC &desc)
@@ -427,188 +414,114 @@ void ValidateState(D3D_RASTERIZER_DESC &desc)
 
 void ValidateState(D3D_DEPTH_STENCIL_DESC &desc)
 {
-	VERIFY( (desc.DepthEnable==0) || (desc.DepthEnable==1));
-	VERIFY( (desc.StencilEnable==0) || (desc.StencilEnable==1));
+	VERIFY( (desc.depthTestEnable==0) || (desc.depthTestEnable ==1));
+	VERIFY( (desc.stencilTestEnable==0) || (desc.stencilTestEnable ==1));
 
-	if (!desc.DepthEnable)
+	if (!desc.depthTestEnable)
 	{
-        desc.DepthWriteMask = D3D_DEPTH_WRITE_MASK_ALL;
-		desc.DepthFunc = D3D_COMPARISON_LESS;
+        desc.depthWriteEnable = VK_TRUE;
+		desc.depthCompareOp = D3D_COMPARISON_LESS;
 	}
 
-	if (!desc.StencilEnable)
+	if (!desc.stencilTestEnable)
 	{
-		desc.StencilReadMask = 0xFF;
-		desc.StencilWriteMask = 0xFF;
+		desc.front.compareMask = desc.back.compareMask = 0xFF;
+		desc.front.writeMask = desc.back.writeMask = 0xFF;
 
-		desc.FrontFace.StencilFailOp = D3D_STENCIL_OP_KEEP;
-		desc.FrontFace.StencilDepthFailOp = D3D_STENCIL_OP_KEEP;
-		desc.FrontFace.StencilPassOp = D3D_STENCIL_OP_KEEP;
-		desc.FrontFace.StencilFunc = D3D_COMPARISON_ALWAYS;
+		desc.front.failOp = D3D_STENCIL_OP_KEEP;
+		desc.front.depthFailOp = D3D_STENCIL_OP_KEEP;
+		desc.front.passOp = D3D_STENCIL_OP_KEEP;
+		desc.front.compareOp = D3D_COMPARISON_ALWAYS;
 
-		desc.BackFace.StencilFailOp = D3D_STENCIL_OP_KEEP;
-		desc.BackFace.StencilDepthFailOp = D3D_STENCIL_OP_KEEP;
-		desc.BackFace.StencilPassOp = D3D_STENCIL_OP_KEEP;
-		desc.BackFace.StencilFunc = D3D_COMPARISON_ALWAYS;
+		desc.back.failOp = D3D_STENCIL_OP_KEEP;
+		desc.back.depthFailOp = D3D_STENCIL_OP_KEEP;
+		desc.back.passOp = D3D_STENCIL_OP_KEEP;
+		desc.back.compareOp = D3D_COMPARISON_ALWAYS;
 	}
 }
 
-#ifdef USE_DX11
 void ValidateState(D3D_BLEND_DESC &desc)
 {
 	BOOL	bBlendEnable = FALSE;
 
 	for ( int i=0; i<8; ++i)
 	{
-		VERIFY( (desc.RenderTarget[i].BlendEnable==0) || (desc.RenderTarget[i].BlendEnable==1));
-		bBlendEnable |= desc.RenderTarget[i].BlendEnable;
+		VERIFY( (desc.RenderTarget[i].blendEnable==0) || (desc.RenderTarget[i].blendEnable ==1));
+		bBlendEnable |= desc.RenderTarget[i].blendEnable;
 	}
 
 	for ( int i=0; i<8; ++i)
 	{
 		if (!bBlendEnable)
 		{
-			desc.RenderTarget[i].SrcBlend = D3D_BLEND_ONE;
-			desc.RenderTarget[i].DestBlend = D3D_BLEND_ZERO;
-			desc.RenderTarget[i].BlendOp = D3D_BLEND_OP_ADD;
-			desc.RenderTarget[i].SrcBlendAlpha = D3D_BLEND_ONE;
-			desc.RenderTarget[i].DestBlendAlpha = D3D_BLEND_ZERO;
-			desc.RenderTarget[i].BlendOpAlpha = D3D_BLEND_OP_ADD;
+			desc.RenderTarget[i].srcColorBlendFactor = D3D_BLEND_ONE;
+			desc.RenderTarget[i].dstColorBlendFactor = D3D_BLEND_ZERO;
+			desc.RenderTarget[i].colorBlendOp = D3D_BLEND_OP_ADD;
+			desc.RenderTarget[i].srcAlphaBlendFactor = D3D_BLEND_ONE;
+			desc.RenderTarget[i].dstAlphaBlendFactor = D3D_BLEND_ZERO;
+			desc.RenderTarget[i].alphaBlendOp = D3D_BLEND_OP_ADD;
 		}
 		else
 		{
-			switch(desc.RenderTarget[i].SrcBlendAlpha)
+			switch(desc.RenderTarget[i].srcAlphaBlendFactor)
 			{
 			case D3D_BLEND_SRC_COLOR:
-				desc.RenderTarget[i].SrcBlendAlpha = D3D_BLEND_SRC_ALPHA;
+				desc.RenderTarget[i].srcAlphaBlendFactor = D3D_BLEND_SRC_ALPHA;
 				break;
 			case D3D_BLEND_INV_SRC_COLOR:
-				desc.RenderTarget[i].SrcBlendAlpha = D3D_BLEND_INV_SRC_ALPHA;
+				desc.RenderTarget[i].srcAlphaBlendFactor = D3D_BLEND_INV_SRC_ALPHA;
 				break;
 			case D3D_BLEND_DEST_COLOR:
-				desc.RenderTarget[i].SrcBlendAlpha = D3D_BLEND_DEST_ALPHA;
+				desc.RenderTarget[i].srcAlphaBlendFactor = D3D_BLEND_DEST_ALPHA;
 				break;
 			case D3D_BLEND_INV_DEST_COLOR:
-				desc.RenderTarget[i].SrcBlendAlpha = D3D_BLEND_INV_DEST_ALPHA;
+				desc.RenderTarget[i].srcAlphaBlendFactor = D3D_BLEND_INV_DEST_ALPHA;
 				break;
 			case D3D_BLEND_SRC1_COLOR:
-				desc.RenderTarget[i].SrcBlendAlpha = D3D_BLEND_SRC1_ALPHA;
+				desc.RenderTarget[i].srcAlphaBlendFactor = D3D_BLEND_SRC1_ALPHA;
 				break;
 			case D3D_BLEND_INV_SRC1_COLOR:
-				desc.RenderTarget[i].SrcBlendAlpha = D3D_BLEND_INV_SRC1_ALPHA;
+				desc.RenderTarget[i].srcAlphaBlendFactor = D3D_BLEND_INV_SRC1_ALPHA;
 					break;
 			}
 
-			switch(desc.RenderTarget[i].DestBlendAlpha)
+			switch(desc.RenderTarget[i].dstAlphaBlendFactor)
 			{
 			case D3D_BLEND_SRC_COLOR:
-				desc.RenderTarget[i].DestBlendAlpha = D3D_BLEND_SRC_ALPHA;
+				desc.RenderTarget[i].dstAlphaBlendFactor = D3D_BLEND_SRC_ALPHA;
 				break;
 			case D3D_BLEND_INV_SRC_COLOR:
-				desc.RenderTarget[i].DestBlendAlpha = D3D_BLEND_INV_SRC_ALPHA;
+				desc.RenderTarget[i].dstAlphaBlendFactor = D3D_BLEND_INV_SRC_ALPHA;
 				break;
 			case D3D_BLEND_DEST_COLOR:
-				desc.RenderTarget[i].DestBlendAlpha = D3D_BLEND_DEST_ALPHA;
+				desc.RenderTarget[i].dstAlphaBlendFactor = D3D_BLEND_DEST_ALPHA;
 				break;
 			case D3D_BLEND_INV_DEST_COLOR:
-				desc.RenderTarget[i].DestBlendAlpha = D3D_BLEND_INV_DEST_ALPHA;
+				desc.RenderTarget[i].dstAlphaBlendFactor = D3D_BLEND_INV_DEST_ALPHA;
 				break;
 			case D3D_BLEND_SRC1_COLOR:
-				desc.RenderTarget[i].DestBlendAlpha = D3D_BLEND_SRC1_ALPHA;
+				desc.RenderTarget[i].dstAlphaBlendFactor = D3D_BLEND_SRC1_ALPHA;
 				break;
 			case D3D_BLEND_INV_SRC1_COLOR:
-				desc.RenderTarget[i].DestBlendAlpha = D3D_BLEND_INV_SRC1_ALPHA;
+				desc.RenderTarget[i].dstAlphaBlendFactor = D3D_BLEND_INV_SRC1_ALPHA;
 				break;
 			}
 		}
 	}
 }
-#else
-void ValidateState(D3D_BLEND_DESC &desc)
-{
-	BOOL	bBlendEnable = FALSE;
-
-	for ( int i=0; i<8; ++i)
-	{
-		VERIFY( (desc.BlendEnable[i]==0) || (desc.BlendEnable[i]==1));
-		bBlendEnable |= desc.BlendEnable[i];
-	}
-
-	if (!bBlendEnable)
-	{
-		desc.SrcBlend = D3D_BLEND_ONE;
-		desc.DestBlend = D3D_BLEND_ZERO;
-		desc.BlendOp = D3D_BLEND_OP_ADD;
-		desc.SrcBlendAlpha = D3D_BLEND_ONE;
-		desc.DestBlendAlpha = D3D_BLEND_ZERO;
-		desc.BlendOpAlpha = D3D_BLEND_OP_ADD;
-	}
-	else
-	{
-		switch(desc.SrcBlendAlpha)
-		{
-		case D3D_BLEND_SRC_COLOR:
-			desc.SrcBlendAlpha = D3D_BLEND_SRC_ALPHA;
-			break;
-		case D3D_BLEND_INV_SRC_COLOR:
-			desc.SrcBlendAlpha = D3D_BLEND_INV_SRC_ALPHA;
-			break;
-		case D3D_BLEND_DEST_COLOR:
-			desc.SrcBlendAlpha = D3D_BLEND_DEST_ALPHA;
-			break;
-		case D3D_BLEND_INV_DEST_COLOR:
-			desc.SrcBlendAlpha = D3D_BLEND_INV_DEST_ALPHA;
-			break;
-		case D3D_BLEND_SRC1_COLOR:
-			desc.SrcBlendAlpha = D3D_BLEND_SRC1_ALPHA;
-			break;
-		case D3D_BLEND_INV_SRC1_COLOR:
-			desc.SrcBlendAlpha = D3D_BLEND_INV_SRC1_ALPHA;
-				break;
-		}
-
-		switch(desc.DestBlendAlpha)
-		{
-		case D3D_BLEND_SRC_COLOR:
-			desc.DestBlendAlpha = D3D_BLEND_SRC_ALPHA;
-			break;
-		case D3D_BLEND_INV_SRC_COLOR:
-			desc.DestBlendAlpha = D3D_BLEND_INV_SRC_ALPHA;
-			break;
-		case D3D_BLEND_DEST_COLOR:
-			desc.DestBlendAlpha = D3D_BLEND_DEST_ALPHA;
-			break;
-		case D3D_BLEND_INV_DEST_COLOR:
-			desc.DestBlendAlpha = D3D_BLEND_INV_DEST_ALPHA;
-			break;
-		case D3D_BLEND_SRC1_COLOR:
-			desc.DestBlendAlpha = D3D_BLEND_SRC1_ALPHA;
-			break;
-		case D3D_BLEND_INV_SRC1_COLOR:
-			desc.DestBlendAlpha = D3D_BLEND_INV_SRC1_ALPHA;
-			break;
-		}
-	}
-	
-}
-#endif
 
 void ValidateState(D3D_SAMPLER_DESC &desc)
 {
-	if (	(desc.AddressU != D3D_TEXTURE_ADDRESS_BORDER)
-		 &&	(desc.AddressV != D3D_TEXTURE_ADDRESS_BORDER)
-		 &&	(desc.AddressW != D3D_TEXTURE_ADDRESS_BORDER))
+	if (	(desc.addressModeU != D3D_TEXTURE_ADDRESS_BORDER)
+		 &&	(desc.addressModeV != D3D_TEXTURE_ADDRESS_BORDER)
+		 &&	(desc.addressModeW != D3D_TEXTURE_ADDRESS_BORDER))
 	{
-		for (int i=0; i<4; ++i)
-		{
-			desc.BorderColor[i] = 0.0f;
-		}
+		desc.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
 	}
 
-	if (	(desc.Filter != D3D_FILTER_ANISOTROPIC)
-		 && (desc.Filter != D3D_FILTER_COMPARISON_ANISOTROPIC))
+	if (!desc.anisotropyEnable)
 	{
-		desc.MaxAnisotropy = 1;
+		desc.maxAnisotropy = 1;
 	}
 }
 

@@ -2,6 +2,8 @@
 #define	vkStateUtils_included
 #pragma once
 
+class dxHashHelper;
+
 namespace vkStateUtils
 {
 	D3D_CULL_MODE				ConvertCullMode(D3DCULL Mode);
@@ -24,10 +26,10 @@ namespace vkStateUtils
 	bool	operator==(const D3D_SAMPLER_DESC &desc1, const D3D_SAMPLER_DESC &desc2);
 
 	//	Calculate hash values
-	u32		GetHash( const D3D_RASTERIZER_DESC &desc );
-	u32		GetHash( const D3D_DEPTH_STENCIL_DESC &desc );
-	u32		GetHash( const D3D_BLEND_DESC &desc );
-	u32		GetHash( const D3D_SAMPLER_DESC &desc );
+	void	GetHash( dxHashHelper &Hash, const D3D_RASTERIZER_DESC &desc );
+	void	GetHash( dxHashHelper &Hash, const D3D_DEPTH_STENCIL_DESC &desc );
+	void	GetHash( dxHashHelper &Hash, const D3D_BLEND_DESC &desc );
+	void	GetHash( dxHashHelper &Hash, const D3D_SAMPLER_DESC &desc );
 
 	//	Modify state to meet vk automatic modifications
 	void	ValidateState(D3D_RASTERIZER_DESC &desc);

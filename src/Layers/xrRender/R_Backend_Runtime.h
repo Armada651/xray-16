@@ -7,7 +7,10 @@
 #include "sh_constant.h"
 #include "sh_rt.h"
 
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_VK)
+#include "Layers/xrRenderVK/vkR_Backend_Runtime.h"
+#include "Layers/xrRenderVK/StateManager/vkState.h"
+#elif defined(USE_DX10) || defined(USE_DX11)
 #include "Layers/xrRenderDX10/dx10R_Backend_Runtime.h"
 #include "Layers/xrRenderDX10/StateManager/dx10State.h"
 #else	//	USE_DX10

@@ -1,12 +1,14 @@
 #include "stdafx.h"
 #include "vkStateCache.h"
 
-vkStateCache		StateCache;
-
-vkStateCache::vkStateCache()
+vkStateCache::vkStateCache(const VkGraphicsPipelineCreateInfo& info)
+	: m_PipelineInfo(info)
 {
 	static const int iMasRSStates = 10;
 	m_StateArray.reserve(iMasRSStates);
+
+	m_PipelineInfo.flags = VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
+	CHK_VK(vkCreateGraphicsPipelines(HW.device, VK_NULL_HANDLE, 1, &m_PipelineInfo, NULL, &m_Pipeline));
 }
 
 vkStateCache::~vkStateCache()
@@ -35,10 +37,15 @@ void vkStateCache::ClearStateArray()
 	m_StateArray.clear_not_free();
 }
 
-void vkStateCache::CreateState(VkGraphicsPipelineCreateInfo desc, VkPipeline* pState)
+void vkStateCache::CreateState(StateDecs desc, VkPipeline* pState)
 {
+	m_PipelineInfo.pRasterizationState = &desc.m_RDesc;
+	m_PipelineInfo.pDepthStencilState = &desc.m_DSDesc;
+	m_PipelineInfo.pColorBlendState = &desc.m_BDesc.Info;
+	m_PipelineInfo.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
+
 	// TODO: VK: Use a state cache and derivative pipelines.
-	CHK_VK(vkCreateGraphicsPipelines(HW.device, VK_NULL_HANDLE, 1, &desc, NULL, pState));
+	CHK_VK(vkCreateGraphicsPipelines(HW.device, VK_NULL_HANDLE, 1, &m_PipelineInfo, NULL, pState));
 
 	//	TODO: VK: Remove this.
 #ifdef	DEBUG

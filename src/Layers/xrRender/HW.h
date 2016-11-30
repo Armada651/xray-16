@@ -53,7 +53,8 @@ public:
 #if defined(USE_VK)	//	USE_DX11
 	VkPhysicalDevice		m_Adapter;	//	pD3D equivalent
 	VkDevice				device;		//	combine with DX9 pDevice via typedef
-	VkInstance				context;	//	combine with DX9 pDevice via typedef
+	VkCommandBuffer			context;	//	combine with DX9 pDevice via typedef
+	VkPipelineLayout		layout;
 	VkSwapchainKHR			m_pSwapChain;
 	VkImageView				BaseRT;	//	combine with DX9 pBaseRT via typedef
 	VkImageView				BaseZB;

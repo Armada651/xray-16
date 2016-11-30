@@ -2,25 +2,36 @@
 #define	vkStateCacheImpl_included
 #pragma once
 #include "Layers/xrRenderVK/vkStateUtils.h"
+#include "Layers/xrRender/Utils/dxHashHelper.h"
 
 using vkStateUtils::operator==;
 
-/*VkPipeline vkStateCache::GetState( SimulatorStates& state_code )
+VkPipeline vkStateCache::GetState( SimulatorStates& state_code )
 {
-	VkGraphicsPipelineCreateInfo		desc;
-	vkStateUtils::ResetDescription(desc);
-	state_code.UpdateDesc(desc);
+	StateDecs		desc;
+	vkStateUtils::ResetDescription(desc.m_RDesc);
+	vkStateUtils::ResetDescription(desc.m_DSDesc);
+	vkStateUtils::ResetDescription(desc.m_BDesc);
+	state_code.UpdateDesc(desc.m_RDesc);
+	state_code.UpdateDesc(desc.m_DSDesc);
+	state_code.UpdateDesc(desc.m_BDesc);
 
 	return GetState(desc);
-}*/
+}
 
-VkPipeline vkStateCache::GetState( VkGraphicsPipelineCreateInfo& desc )
+VkPipeline vkStateCache::GetState( StateDecs& desc )
 {
 	VkPipeline	pResult;
 
-	vkStateUtils::ValidateState(desc);
+	vkStateUtils::ValidateState(desc.m_RDesc);
+	vkStateUtils::ValidateState(desc.m_DSDesc);
+	vkStateUtils::ValidateState(desc.m_BDesc);
 
-	u32 crc = vkStateUtils::GetHash(desc);
+	dxHashHelper hash;
+	vkStateUtils::GetHash(hash, desc.m_RDesc);
+	vkStateUtils::GetHash(hash, desc.m_DSDesc);
+	vkStateUtils::GetHash(hash, desc.m_BDesc);
+	u32 crc = hash.GetHash();
 
 	pResult = FindState( desc, crc);
 
@@ -28,7 +39,6 @@ VkPipeline vkStateCache::GetState( VkGraphicsPipelineCreateInfo& desc )
 	{
 		StateRecord rec;
 		rec.m_crc = crc;
-		rec.m_desc = desc;
 		CreateState(desc, &rec.m_pState);
 		pResult = rec.m_pState;
 		m_StateArray.push_back(rec);
@@ -37,16 +47,18 @@ VkPipeline vkStateCache::GetState( VkGraphicsPipelineCreateInfo& desc )
 	return pResult;
 }
 
-VkPipeline vkStateCache::FindState( const VkGraphicsPipelineCreateInfo& desc, u32 StateCRC )
+VkPipeline vkStateCache::FindState( const StateDecs& desc, u32 StateCRC )
 {
     u32 res = 0xffffffff;
 	for (u32 i=0; i<m_StateArray.size(); ++i)
 	{
 		if (m_StateArray[i].m_crc==StateCRC)
 		{
-			VkGraphicsPipelineCreateInfo	descCandidate = m_StateArray[i].m_desc;
+			StateDecs	descCandidate = m_StateArray[i].m_desc;
 			//if ( !memcmp(&descCandidate, &desc, sizeof(desc)) )
-			if (descCandidate==desc)
+			if (descCandidate.m_RDesc == desc.m_RDesc &&
+				descCandidate.m_DSDesc == desc.m_DSDesc &&
+				descCandidate.m_BDesc == desc.m_BDesc)
 				//break;
 			//	TEST
 			{

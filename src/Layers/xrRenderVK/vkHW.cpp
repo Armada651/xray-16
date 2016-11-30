@@ -4,15 +4,12 @@
 #include "stdafx.h"
 #pragma hdrstop
 
-#pragma warning(disable:4995)
-#include <d3dx9.h>
-#pragma warning(default:4995)
 #include "Layers/xrRender/HW.h"
 #include "xrEngine/XR_IOConsole.h"
 #include "Include/xrAPI/xrAPI.h"
 
-#include "StateManager\dx10SamplerStateCache.h"
-#include "StateManager\dx10StateCache.h"
+#include "StateManager\vkSamplerStateCache.h"
+//#include "StateManager\vkStateCache.h"
 
 #ifndef _EDITOR
 void	fill_vid_mode_list			(CHW* _hw);
@@ -39,8 +36,8 @@ IDirect3DStateBlock9*	dwDebugSB = 0;
 CHW::CHW() : 
 //	hD3D(NULL),
 	//pD3D(NULL),
-	m_pAdapter(0),
-	pDevice(NULL),
+	m_Adapter(0),
+	device(NULL),
 	m_move_window(true)
 	//pBaseRT(NULL),
 	//pBaseZB(NULL)
