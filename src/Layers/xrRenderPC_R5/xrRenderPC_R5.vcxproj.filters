@@ -23,9 +23,6 @@
     <Filter Include="Details">
       <UniqueIdentifier>{179066b7-f1d7-487a-b10a-c70dc816a0ab}</UniqueIdentifier>
     </Filter>
-    <Filter Include="dx9 to dx10 Utils">
-      <UniqueIdentifier>{10144036-b3a7-4000-ac29-5c6776d23f1d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Glows">
       <UniqueIdentifier>{5f445d93-696e-4177-a85e-fe5aea1ce9f7}</UniqueIdentifier>
     </Filter>
@@ -185,6 +182,9 @@
     <Filter Include="StateManager">
       <UniqueIdentifier>{771cc742-0aed-4ecb-a91c-8c48107eebd0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dx9 to vk Utils">
+      <UniqueIdentifier>{10144036-b3a7-4000-ac29-5c6776d23f1d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\xrRenderDX10\3DFluid\dx103DFluidData.h">
@@ -255,15 +255,6 @@
     </ClInclude>
     <ClInclude Include="..\xrRender\DetailModel.h">
       <Filter>Details</Filter>
-    </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\dx10BufferUtils.h">
-      <Filter>dx9 to dx10 Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\dx10StateUtils.h">
-      <Filter>dx9 to dx10 Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\dx10TextureUtils.h">
-      <Filter>dx9 to dx10 Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\xrRender\RenderFactory.h">
       <Filter>Interfase implementations\RenderFactory</Filter>
@@ -438,9 +429,6 @@
     </ClInclude>
     <ClInclude Include="..\xrRender\HWCaps.h">
       <Filter>Refactored\HW</Filter>
-    </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\dx10R_Backend_Runtime.h">
-      <Filter>Refactored\Backend</Filter>
     </ClInclude>
     <ClInclude Include="..\xrRender\FVF.h">
       <Filter>Refactored\Backend</Filter>
@@ -679,24 +667,6 @@
     <ClInclude Include="..\xrRenderDX10\DX10 Rain\dx10RainBlender.h">
       <Filter>Shading templates\DX10 Rain</Filter>
     </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\StateManager\dx10SamplerStateCache.h">
-      <Filter>StateManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\StateManager\dx10ShaderResourceStateCache.h">
-      <Filter>StateManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\StateManager\dx10State.h">
-      <Filter>StateManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\StateManager\dx10StateCache.h">
-      <Filter>StateManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\StateManager\dx10StateCacheImpl.h">
-      <Filter>StateManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\StateManager\dx10StateManager.h">
-      <Filter>StateManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\xrRender\NvTriStrip.h">
       <Filter>Stripifier</Filter>
     </ClInclude>
@@ -729,6 +699,36 @@
     </ClInclude>
     <ClInclude Include="..\xrRenderPC_R4\r4.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\StateManager\vkSamplerStateCache.h">
+      <Filter>StateManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\StateManager\vkShaderResourceStateCache.h">
+      <Filter>StateManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\StateManager\vkState.h">
+      <Filter>StateManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\StateManager\vkStateManager.h">
+      <Filter>StateManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\vkTextureUtils.h">
+      <Filter>dx9 to vk Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\vkBufferUtils.h">
+      <Filter>dx9 to vk Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\vkStateUtils.h">
+      <Filter>dx9 to vk Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\vkR_Backend_Runtime.h">
+      <Filter>Refactored\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\StateManager\vkStateCache.h">
+      <Filter>StateManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\StateManager\vkStateCacheImpl.h">
+      <Filter>StateManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -908,15 +908,6 @@
     </ClCompile>
     <ClCompile Include="..\xrRender\DetailModel.cpp">
       <Filter>Details</Filter>
-    </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\dx10BufferUtils.cpp">
-      <Filter>dx9 to dx10 Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\dx10StateUtils.cpp">
-      <Filter>dx9 to dx10 Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\dx10TextureUtils.cpp">
-      <Filter>dx9 to dx10 Utils</Filter>
     </ClCompile>
     <ClCompile Include="..\xrRender\dxRenderFactory.cpp">
       <Filter>Interfase implementations\RenderFactory</Filter>
@@ -1263,21 +1254,6 @@
     <ClCompile Include="..\xrRenderDX10\DX10 Rain\dx10RainBlender.cpp">
       <Filter>Shading templates\DX10 Rain</Filter>
     </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\StateManager\dx10SamplerStateCache.cpp">
-      <Filter>StateManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\StateManager\dx10ShaderResourceStateCache.cpp">
-      <Filter>StateManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\StateManager\dx10State.cpp">
-      <Filter>StateManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\StateManager\dx10StateCache.cpp">
-      <Filter>StateManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\StateManager\dx10StateManager.cpp">
-      <Filter>StateManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\xrRender\NvTriStrip.cpp">
       <Filter>Stripifier</Filter>
     </ClCompile>
@@ -1317,11 +1293,35 @@
     <ClCompile Include="xrRender_R5.cpp">
       <Filter>Kernel</Filter>
     </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\dx10HW.cpp">
-      <Filter>Refactored\HW</Filter>
-    </ClCompile>
     <ClCompile Include="..\xrRenderPC_R4\r4.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\StateManager\vkSamplerStateCache.cpp">
+      <Filter>StateManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\StateManager\vkShaderResourceStateCache.cpp">
+      <Filter>StateManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\StateManager\vkState.cpp">
+      <Filter>StateManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\StateManager\vkStateManager.cpp">
+      <Filter>StateManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\vkHW.cpp">
+      <Filter>Refactored\HW</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\vkBufferUtils.cpp">
+      <Filter>dx9 to vk Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\vkStateUtils.cpp">
+      <Filter>dx9 to vk Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\vkTextureUtils.cpp">
+      <Filter>dx9 to vk Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\StateManager\vkStateCache.cpp">
+      <Filter>StateManager</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

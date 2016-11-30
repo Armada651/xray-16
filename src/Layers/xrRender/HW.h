@@ -50,7 +50,16 @@ public:
 #endif
 
 //	Variables section
-#if defined(USE_DX11)	//	USE_DX10
+#if defined(USE_VK)	//	USE_DX11
+	VkPhysicalDevice		m_Adapter;	//	pD3D equivalent
+	VkDevice				device;		//	combine with DX9 pDevice via typedef
+	VkInstance				context;	//	combine with DX9 pDevice via typedef
+	VkSwapchainKHR			m_pSwapChain;
+	VkImageView				BaseRT;	//	combine with DX9 pBaseRT via typedef
+	VkImageView				BaseZB;
+
+	CHWCaps					Caps;
+#elif defined(USE_DX11)	//	USE_DX10
 public:
 	IDXGIAdapter*			m_pAdapter;	//	pD3D equivalent
 	ID3D11Device*			pDevice;	//	combine with DX9 pDevice via typedef
