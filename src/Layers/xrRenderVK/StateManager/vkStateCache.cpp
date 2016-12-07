@@ -44,7 +44,7 @@ void vkStateCache::CreateState(StateDecs desc, VkPipeline* pState)
 	m_PipelineInfo.pColorBlendState = &desc.m_BDesc.Info;
 	m_PipelineInfo.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
 
-	// TODO: VK: Use a state cache and derivative pipelines.
+	// TODO: VK: Use a state cache
 	CHK_VK(vkCreateGraphicsPipelines(HW.device, VK_NULL_HANDLE, 1, &m_PipelineInfo, NULL, pState));
 
 	//	TODO: VK: Remove this.
