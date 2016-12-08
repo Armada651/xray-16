@@ -41,7 +41,7 @@ void vkStateCache::CreateState(StateDecs desc, VkPipeline* pState)
 {
 	m_PipelineInfo.pRasterizationState = &desc.m_RDesc;
 	m_PipelineInfo.pDepthStencilState = &desc.m_DSDesc;
-	m_PipelineInfo.pColorBlendState = &desc.m_BDesc.Info;
+	m_PipelineInfo.pColorBlendState = &desc.m_BDesc.Blend;
 	m_PipelineInfo.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
 
 	// TODO: VK: Use a state cache

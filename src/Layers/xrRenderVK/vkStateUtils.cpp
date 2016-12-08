@@ -210,9 +210,9 @@ void ResetDescription( D3D_DEPTH_STENCIL_DESC &desc )
 void ResetDescription( D3D_BLEND_DESC &desc )
 {
 	ZeroMemory(&desc, sizeof(desc));
-	desc.Info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-	desc.Info.attachmentCount = 8;
-	desc.Info.pAttachments = desc.RenderTarget;
+	desc.Blend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	desc.Blend.attachmentCount = 8;
+	desc.Blend.pAttachments = desc.RenderTarget;
 
 	for (int i = 0; i<8; ++i)
 	{
@@ -222,7 +222,7 @@ void ResetDescription( D3D_BLEND_DESC &desc )
 		desc.RenderTarget[i].srcAlphaBlendFactor = D3D_BLEND_ONE;
 		desc.RenderTarget[i].dstAlphaBlendFactor = D3D_BLEND_ZERO;
 		desc.RenderTarget[i].alphaBlendOp = D3D_BLEND_OP_ADD;
-		desc.RenderTarget[i].blendEnable = FALSE;
+		desc.RenderTarget[i].blendEnable = VK_FALSE;
 		desc.RenderTarget[i].colorWriteMask = D3D_COLOR_WRITE_ENABLE_ALL;
 	}
 }
@@ -292,9 +292,10 @@ bool operator==(const D3D_DEPTH_STENCIL_DESC &desc1, const D3D_DEPTH_STENCIL_DES
 
 bool operator==(const D3D_BLEND_DESC &desc1, const D3D_BLEND_DESC &desc2)
 {
-	if ( desc1.Info.logicOpEnable != desc2.Info.logicOpEnable) return false;
-	if ( desc1.Info.logicOp != desc2.Info.logicOp) return false;
-	if ( desc1.Info.attachmentCount != desc2.Info.attachmentCount) return false;
+	// Ignore blend constants, since we never use them
+	if ( desc1.Blend.logicOpEnable != desc2.Blend.logicOpEnable) return false;
+	if ( desc1.Blend.logicOp != desc2.Blend.logicOp) return false;
+	if ( desc1.Blend.attachmentCount != desc2.Blend.attachmentCount) return false;
 
 	for (int i = 0; i<4/*8*//*It's quick fix for dx11 port because of mispatch of desc*/; ++i)
 	{
@@ -372,8 +373,8 @@ void GetHash( dxHashHelper &Hash, const D3D_DEPTH_STENCIL_DESC &desc )
 
 void GetHash( dxHashHelper &Hash, const D3D_BLEND_DESC &desc )
 {
-	Hash.AddData( &desc.Info.attachmentCount, sizeof(desc.Info.attachmentCount) );
-	Hash.AddData( desc.Info.blendConstants, sizeof(desc.Info.blendConstants) );
+	// Ignore blend constants, since we never use them
+	Hash.AddData( &desc.Blend.attachmentCount, sizeof(desc.Blend.attachmentCount) );
 
 	for ( int i=0; i<8; ++i)
 	{

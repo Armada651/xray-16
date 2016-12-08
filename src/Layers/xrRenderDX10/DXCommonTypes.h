@@ -21,7 +21,7 @@ typedef VkSamplerCreateInfo						D3D_SAMPLER_DESC;
 typedef VkPipelineRasterizationStateCreateInfo	D3D_RASTERIZER_DESC;
 typedef VkPipelineDepthStencilStateCreateInfo	D3D_DEPTH_STENCIL_DESC;
 typedef struct {
-	VkPipelineColorBlendStateCreateInfo Info;
+	VkPipelineColorBlendStateCreateInfo Blend;
 	VkPipelineColorBlendAttachmentState RenderTarget[8];
 } D3D_BLEND_DESC;
 
