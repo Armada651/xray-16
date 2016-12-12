@@ -1,14 +1,10 @@
 #include "stdafx.h"
 #include "vkStateCache.h"
 
-vkStateCache::vkStateCache(const VkGraphicsPipelineCreateInfo& info)
-	: m_PipelineInfo(info)
+vkStateCache::vkStateCache()
 {
 	static const int iMasRSStates = 10;
 	m_StateArray.reserve(iMasRSStates);
-
-	m_PipelineInfo.flags = VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
-	CHK_VK(vkCreateGraphicsPipelines(HW.device, VK_NULL_HANDLE, 1, &m_PipelineInfo, NULL, &m_Pipeline));
 }
 
 vkStateCache::~vkStateCache()
@@ -26,6 +22,13 @@ vkStateCache<IDeviceState, StateDecs>
 	ClearStateArray();
 }
 */
+
+void vkStateCache::Init(const VkGraphicsPipelineCreateInfo& info)
+{
+	m_PipelineInfo = info;
+	m_PipelineInfo.flags = VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
+	CHK_VK(vkCreateGraphicsPipelines(HW.device, VK_NULL_HANDLE, 1, &m_PipelineInfo, NULL, &m_Pipeline));
+}
 
 void vkStateCache::ClearStateArray()
 {

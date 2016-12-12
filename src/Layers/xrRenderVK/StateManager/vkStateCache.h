@@ -13,9 +13,10 @@ public:
 
 	//	Public interface
 public:
-	vkStateCache(const VkGraphicsPipelineCreateInfo& info);
+	vkStateCache();
 	~vkStateCache();
 
+	void			Init(const VkGraphicsPipelineCreateInfo& info);
 	void			ClearStateArray();
 
 	VkPipeline	GetState(SimulatorStates& state_code);

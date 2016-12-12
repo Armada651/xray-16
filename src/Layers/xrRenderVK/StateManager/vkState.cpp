@@ -1,14 +1,14 @@
 #include "stdafx.h"
 #include "vkState.h"
-
-
 #include "vkStateCache.h"
+#include "Layers/xrRender/Shader.h"
 
-vkState::vkState() : 
-	m_Pipeline(0),
+vkState::vkState() :
 	m_uiStencilRef(UINT(-1)),
 	m_uiAlphaRef(0)
 {
+	memset(&m_Stages, 0, sizeof(m_Stages));
+	memset(&m_Input, 0, sizeof(m_Input));
 }
 
 vkState::~vkState()
@@ -18,15 +18,78 @@ vkState::~vkState()
 	//	m_pBlendState is a weak link
 }
 
-vkState* vkState::Create(SimulatorStates& state_code)
+vkState* vkState::Create(SimulatorStates& state_code, const SPass& pass)
 {
 	vkState	*pState = new vkState();
 
-	state_code.UpdateState(*pState);
+	VkGraphicsPipelineCreateInfo info;
+	memset(&info, 0, sizeof(info));
+	info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 
-	pState->m_pRasterizerState = RSManager.GetState(state_code);
-	pState->m_pDepthStencilState = DSSManager.GetState(state_code);
-	pState->m_pBlendState = BSManager.GetState(state_code);
+	if (pass.vs)
+	{
+		pState->m_Stages[info.stageCount].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		pState->m_Stages[info.stageCount].stage = VK_SHADER_STAGE_VERTEX_BIT;
+		pState->m_Stages[info.stageCount].module = pass.vs->vs;
+		pState->m_Stages[info.stageCount].pName = "main";
+		info.stageCount++;
+	}
+
+	if (pass.ps)
+	{
+		pState->m_Stages[info.stageCount].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		pState->m_Stages[info.stageCount].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		pState->m_Stages[info.stageCount].module = pass.ps->ps;
+		pState->m_Stages[info.stageCount].pName = "main";
+		info.stageCount++;
+	}
+
+	if (pass.gs)
+	{
+		pState->m_Stages[info.stageCount].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		pState->m_Stages[info.stageCount].stage = VK_SHADER_STAGE_GEOMETRY_BIT;
+		pState->m_Stages[info.stageCount].module = pass.gs->gs;
+		pState->m_Stages[info.stageCount].pName = "main";
+		info.stageCount++;
+	}
+
+	if (pass.hs)
+	{
+		pState->m_Stages[info.stageCount].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		pState->m_Stages[info.stageCount].stage = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+		pState->m_Stages[info.stageCount].module = pass.hs->sh;
+		pState->m_Stages[info.stageCount].pName = "main";
+		info.stageCount++;
+	}
+
+	if (pass.ds)
+	{
+		pState->m_Stages[info.stageCount].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		pState->m_Stages[info.stageCount].stage = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+		pState->m_Stages[info.stageCount].module = pass.ds->sh;
+		pState->m_Stages[info.stageCount].pName = "main";
+		info.stageCount++;
+	}
+
+	if (pass.cs)
+	{
+		pState->m_Stages[info.stageCount].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		pState->m_Stages[info.stageCount].stage = VK_SHADER_STAGE_COMPUTE_BIT;
+		pState->m_Stages[info.stageCount].module = pass.cs->sh;
+		pState->m_Stages[info.stageCount].pName = "main";
+		info.stageCount++;
+	}
+	info.pStages = pState->m_Stages;
+
+	m_Input.pVertexAttributeDescriptions
+	info.pVertexInputState = &m_Input;
+	
+
+	state_code.UpdateState(*pState);
+	state_code.UpdateDesc(pState->m_RDesc);
+	state_code.UpdateDesc(pState->m_DSDesc);
+	state_code.UpdateDesc(pState->m_BDesc);
+
 	//ID3DxxDevice::CreateSamplerState
 
 	//	Create samplers here
@@ -47,8 +110,7 @@ vkState* vkState::Create(SimulatorStates& state_code)
 
 HRESULT vkState::Apply()
 {
-	VERIFY(m_Pipeline);
-	StateManager.SetRasterizerState(m_pRasterizerState);
+	StateManager.SetState(this);
 	if( m_uiStencilRef != -1 )
 		StateManager.SetStencilRef(m_uiStencilRef);
 	StateManager.SetAlphaRef(m_uiAlphaRef);
@@ -112,4 +174,19 @@ void vkState::InitSamplers( tSamplerHArray& SamplerArray, SimulatorStates& state
 				SamplerArray.push_back(u32(vkSamplerStateCache::hInvalidHandle));
 		}
 	}
+}
+
+void vkState::GetDesc(D3D_RASTERIZER_DESC* pDesc)
+{
+	*pDesc = m_RDesc;
+}
+
+void vkState::GetDesc(D3D_DEPTH_STENCIL_DESC* pDesc)
+{
+	*pDesc = m_DSDesc;
+}
+
+void vkState::GetDesc(D3D_BLEND_DESC* pDesc)
+{
+	*pDesc = m_BDesc;
 }

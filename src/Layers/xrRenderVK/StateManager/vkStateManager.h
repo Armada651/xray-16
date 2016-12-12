@@ -17,9 +17,7 @@ public:
 	void	UnmapConstants();
 
 	//	Set appropriate state. The fastest method. Prefer this code.
-	void	SetRasterizerState(ID3DRasterizerState* pRState);
-	void	SetDepthStencilState(ID3DDepthStencilState* pDSState);
-	void	SetBlendState(ID3DBlendState* pBlendState);
+	void	SetState(vkState* pState);
 	void	SetStencilRef(UINT uiStencilRef);
 	void	SetAlphaRef(UINT uiAlphaRef);
 
@@ -51,10 +49,7 @@ private:
 	void	ValidateBDesc();
 
 private:
-	//	All states are supposed to live along all application lifetime
-	ID3DRasterizerState*		m_pRState;		//	Weak link
-	ID3DDepthStencilState*		m_pDepthStencilState;	//	Weak link
-	ID3DBlendState*				m_pBlendState;			//	Weak link
+	vkState*					m_pState;
 
 	UINT						m_uiStencilRef;
 	UINT						m_uiAlphaRef;
@@ -63,9 +58,7 @@ private:
 	R_constant*					m_cAlphaRef;
 
 	//	Appropriate state should be applied
-	bool						m_bRSNeedApply;
-	bool						m_bDSSNeedApply;
-	bool						m_bBSNeedApply;
+	bool						m_bStateNeedApply;
 
 	//	Appropriate state is invalid. 
 	//	Get a new state from cache by description before apply.

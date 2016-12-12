@@ -4,7 +4,9 @@
 
 class SimulatorStates;
 
+#include "vkStateCache.h"
 #include "vkSamplerStateCache.h"
+#include "Layers/xrRender/Shader.h"
 
 class vkState
 {
@@ -13,7 +15,7 @@ public:
 	vkState();	//	These have to be private bu new/xr_delete don't support this
 	~vkState();
 
-	static vkState* Create( SimulatorStates& state_code );
+	static vkState* Create( SimulatorStates& state_code, const SPass& pass );
 
 	//	DX9 unified interface
 	HRESULT Apply();
@@ -22,6 +24,11 @@ public:
 	//	DX10 specific
 	void	UpdateStencilRef( UINT Ref ) { m_uiStencilRef = Ref; }
 	void	UpdateAlphaRef( UINT Ref ) { m_uiAlphaRef = Ref; }
+
+	// VK specific
+	void	GetDesc(D3D_RASTERIZER_DESC* pDesc);
+	void	GetDesc(D3D_DEPTH_STENCIL_DESC* pDesc);
+	void	GetDesc(D3D_BLEND_DESC* pDesc);
 
 //	User restricted interface
 private:
@@ -32,7 +39,7 @@ private:
 
 private:
 	//	All states are supposed to live along all application lifetime
-	VkPipeline m_Pipeline;	//  The vkPipeline contains all states
+	vkStateCache				m_StateCache;
 
 	tSamplerHArray				m_VSSamplers;
 	tSamplerHArray				m_PSSamplers;
@@ -45,6 +52,13 @@ private:
 
 	UINT						m_uiStencilRef;
 	UINT						m_uiAlphaRef;
+
+	D3D_RASTERIZER_DESC			m_RDesc;
+	D3D_DEPTH_STENCIL_DESC		m_DSDesc;
+	D3D_BLEND_DESC				m_BDesc;
+
+	VkPipelineShaderStageCreateInfo m_Stages[6];
+	VkPipelineVertexInputStateCreateInfo m_Input;
 
 //	Private data
 private:

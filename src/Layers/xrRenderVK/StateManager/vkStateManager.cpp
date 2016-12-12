@@ -23,9 +23,7 @@ void vkStateManager::Reset()
 {
 	UnmapConstants();
 
-	m_pRState = 0;
-	m_pDepthStencilState = 0;
-	m_pBlendState = 0;
+	m_pState = nullptr;
 
 	m_uiStencilRef = 0;
 	m_uiAlphaRef = 0;
@@ -56,39 +54,20 @@ void vkStateManager::UnmapConstants()
 	m_cAlphaRef = 0;
 }
 
-void vkStateManager::SetRasterizerState(ID3DRasterizerState* pRState)
+void vkStateManager::SetState(vkState* pState)
 {
 	m_bRSChanged = false;
-	m_bRDInvalid = true;
-
-	if (pRState != m_pRState)
-	{
-		m_pRState = pRState;
-		m_bRSNeedApply = true;
-	}
-}
-
-void vkStateManager::SetDepthStencilState(ID3DDepthStencilState* pDSState)
-{
 	m_bDSSChanged = false;
-	m_bDSDInvalid = true;
-
-	if (pDSState != m_pDepthStencilState)
-	{
-		m_pDepthStencilState = pDSState;
-		m_bDSSNeedApply = true;
-	}
-}
-
-void vkStateManager::SetBlendState(ID3DBlendState* pBlendState)
-{
 	m_bBSChanged = false;
+
+	m_bRDInvalid = true;
+	m_bDSDInvalid = true;
 	m_bBDInvalid = true;
 
-	if (pBlendState != m_pBlendState)
+	if (pState != m_pState)
 	{
-		m_pBlendState = pBlendState;
-		m_bBSNeedApply = true;
+		m_pState = pState;
+		m_bStateNeedApply = true;
 	}
 }
 
@@ -97,7 +76,7 @@ void vkStateManager::SetStencilRef(UINT uiStencilRef)
 	if ( m_uiStencilRef != uiStencilRef)
 	{
 		m_uiStencilRef = uiStencilRef;
-		m_bDSSNeedApply = true;
+		m_bDSSChanged = true;
 	}
 }
 
@@ -120,8 +99,8 @@ void vkStateManager::ValidateRDesc()
 {
 	if (m_bRDInvalid)
 	{
-		if (m_pRState)
-			m_pRState->GetDesc(&m_RDesc);
+		if (m_pState)
+			m_pState->GetDesc(&m_RDesc);
 		else
 			vkStateUtils::ResetDescription(m_RDesc);
 
@@ -133,8 +112,8 @@ void vkStateManager::ValidateDSDesc()
 {
 	if (m_bDSDInvalid)
 	{
-		if (m_pDepthStencilState)
-			m_pDepthStencilState->GetDesc(&m_DSDesc);
+		if (m_pState)
+			m_pState->GetDesc(&m_DSDesc);
 		else
 			vkStateUtils::ResetDescription(m_DSDesc);
 
@@ -146,8 +125,8 @@ void vkStateManager::ValidateBDesc()
 {
 	if (m_bBDInvalid)
 	{
-		if (m_pBlendState)
-			m_pBlendState->GetDesc(&m_BDesc);
+		if (m_pState)
+			m_pState->GetDesc(&m_BDesc);
 		else
 			vkStateUtils::ResetDescription(m_BDesc);
 
@@ -159,7 +138,7 @@ void vkStateManager::ValidateBDesc()
 void vkStateManager::Apply()
 {
 	//	Apply rasterizer state
-	if ( m_bRSNeedApply || m_bRSChanged )
+	/*if ( m_bRSNeedApply || m_bRSChanged )
 	{
 		if (m_bRSChanged)
 		{
@@ -197,7 +176,7 @@ void vkStateManager::Apply()
 
 		HW.pContext->OMSetBlendState(m_pBlendState, BlendFactor, m_uiSampleMask);
 		m_bBSNeedApply = false;
-	}
+	}*/
 }
 
 void vkStateManager::SetStencil(u32 Enable, u32 Func, u32 Ref, u32 Mask, u32 WriteMask, u32 Fail, u32 Pass, u32 ZFail)
@@ -336,7 +315,7 @@ void vkStateManager::SetColorWriteEnable(u32 WriteMask)
 	bool	bNeedUpdate = false;
 	for (int i=0; i<4; ++i)
 	{
-		if (m_BDesc.RenderTarget[i].RenderTargetWriteMask!=WMask)
+		if (m_BDesc.RenderTarget[i].colorWriteMask !=WMask)
 			bNeedUpdate = true;
 	}
 
@@ -344,7 +323,7 @@ void vkStateManager::SetColorWriteEnable(u32 WriteMask)
 	{
 		m_bBSChanged = true;
 		for (int i=0; i<4; ++i)
-			m_BDesc.RenderTarget[i].RenderTargetWriteMask = WMask;
+			m_BDesc.RenderTarget[i].colorWriteMask = WMask;
 	}
 }
 
@@ -352,8 +331,9 @@ void vkStateManager::SetSampleMask( u32 SampleMask )
 {
    if( m_uiSampleMask != SampleMask )
    {
-      m_uiSampleMask = SampleMask;
-		m_bBSNeedApply = true;
+		// TODO: VK: Implement MSAA support.
+		m_uiSampleMask = SampleMask;
+		m_bBSChanged = true;
    }
 }
 
