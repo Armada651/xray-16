@@ -369,7 +369,9 @@ int RunApplication(const char* commandLine)
         return 0;
     }
 #ifndef DEDICATED_SERVER
-    if (strstr(Core.Params, "-r4"))
+    if (strstr(Core.Params, "-r5"))
+        Console->Execute("renderer renderer_r5");
+    else if (strstr(Core.Params, "-r4"))
         Console->Execute("renderer renderer_r4");
     else if (strstr(Core.Params, "-r3"))
         Console->Execute("renderer renderer_r3");

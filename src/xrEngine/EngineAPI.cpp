@@ -54,6 +54,19 @@ void CEngineAPI::InitializeNotDedicated()
     LPCSTR r2_name = "xrRender_R2";
     LPCSTR r3_name = "xrRender_R3";
     LPCSTR r4_name = "xrRender_R4";
+    LPCSTR r5_name = "xrRender_R5";
+
+    if (psDeviceFlags.test(rsR5))
+    {
+        // try to initialize R5
+        hRender = XRay::LoadLibrary(r5_name);
+        if (0 == hRender)
+        {
+            // try to load R1
+            Msg("! ...Failed - incompatible hardware/pre-Vista OS.");
+            psDeviceFlags.set(rsR2, TRUE);
+        }
+    }
 
     if (psDeviceFlags.test(rsR4))
     {
@@ -84,6 +97,7 @@ void CEngineAPI::InitializeNotDedicated()
     if (psDeviceFlags.test(rsR2))
     {
         // try to initialize R2
+        psDeviceFlags.set(rsR5, FALSE);
         psDeviceFlags.set(rsR4, FALSE);
         psDeviceFlags.set(rsR3, FALSE);
         hRender = XRay::LoadLibrary(r2_name);
@@ -111,6 +125,7 @@ void CEngineAPI::Initialize(void)
     if (0 == hRender)
     {
         // try to load R1
+        psDeviceFlags.set(rsR5, FALSE);
         psDeviceFlags.set(rsR4, FALSE);
         psDeviceFlags.set(rsR3, FALSE);
         psDeviceFlags.set(rsR2, FALSE);
@@ -202,10 +217,12 @@ void CEngineAPI::CreateRendererList()
     bool bSupports_r2_5 = false;
     bool bSupports_r3 = false;
     bool bSupports_r4 = false;
+    bool bSupports_r5 = false;
 
     LPCSTR r2_name = "xrRender_R2";
     LPCSTR r3_name = "xrRender_R3";
     LPCSTR r4_name = "xrRender_R4";
+    LPCSTR r5_name = "xrRender_R5";
 
     if (strstr(Core.Params, "-perfhud_hack"))
     {
@@ -213,6 +230,7 @@ void CEngineAPI::CreateRendererList()
         bSupports_r2_5 = true;
         bSupports_r3 = true;
         bSupports_r4 = true;
+        bSupports_r5 = true;
     }
     else
     {
@@ -256,6 +274,11 @@ void CEngineAPI::CreateRendererList()
             R_ASSERT(test_dx11_rendering);
             bSupports_r4 = test_dx11_rendering();
         }
+
+        // try to initialize R5
+        hRender = XRay::LoadLibrary(r5_name);
+        if (hRender)
+            bSupports_r5 = true;
     }
 
     hRender = 0;
@@ -273,6 +296,8 @@ void CEngineAPI::CreateRendererList()
         tmp.push_back("renderer_r3");
     if (proceed &= bSupports_r4, proceed)
         tmp.push_back("renderer_r4");
+    if (proceed &= bSupports_r5, proceed)
+        tmp.push_back("renderer_r5");
     u32 _cnt = tmp.size() + 1;
     vid_quality_token = xr_alloc<xr_token>(_cnt);
 
