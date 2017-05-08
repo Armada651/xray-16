@@ -24,6 +24,7 @@
 #include <D3Dx11core.h>
 #include <D3DCompiler.h>
 
+#define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
 
 #include "Layers/xrRender/xrD3DDefs.h"
@@ -35,7 +36,7 @@
 #define		R_R3	3
 #define		R_R4	4
 #define		R_R5	5
-#define		RENDER	R_R4
+#define		RENDER	R_R5
 
 #include "xrParticles/psystem.h"
 

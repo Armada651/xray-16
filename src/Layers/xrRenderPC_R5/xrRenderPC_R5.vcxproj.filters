@@ -1317,11 +1317,11 @@
     <ClCompile Include="xrRender_R5.cpp">
       <Filter>Kernel</Filter>
     </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\dx10HW.cpp">
-      <Filter>Refactored\HW</Filter>
-    </ClCompile>
     <ClCompile Include="..\xrRenderPC_R4\r4.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\vkHW.cpp">
+      <Filter>Refactored\HW</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -296,7 +296,6 @@
     <ClCompile Include="..\xrRenderDX10\dx10BufferUtils.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10ConstantBuffer.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10DetailManager_VS.cpp" />
-    <ClCompile Include="..\xrRenderDX10\dx10HW.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10ResourceManager_Resources.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10ResourceManager_Scripting.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10r_constants.cpp" />
@@ -371,6 +370,7 @@
     <ClCompile Include="..\xrRenderPC_R4\r4_R_render.cpp" />
     <ClCompile Include="..\xrRenderPC_R4\r4_R_sun_support.cpp" />
     <ClCompile Include="..\xrRenderPC_R4\R_Backend_LOD.cpp" />
+    <ClCompile Include="..\xrRenderVK\vkHW.cpp" />
     <ClCompile Include="..\xrRender\Animation.cpp" />
     <ClCompile Include="..\xrRender\blenders\Blender.cpp" />
     <ClCompile Include="..\xrRender\blenders\Blender_Palette.cpp" />

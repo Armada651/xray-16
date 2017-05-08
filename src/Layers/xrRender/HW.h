@@ -13,7 +13,7 @@
 #endif
 
 class CHW
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_DX10) || defined(USE_DX11) && !defined(USE_VK)
     : public pureAppActivate,
       public pureAppDeactivate
 #endif //	USE_DX10
@@ -40,7 +40,7 @@ public:
     BOOL support(D3DFORMAT fmt, DWORD type, DWORD usage);
 
 #ifdef DEBUG
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_DX10) || defined(USE_DX11) || defined(USE_VK)
     void Validate(void){};
 #else //	USE_DX10
     void Validate(void)
@@ -54,7 +54,25 @@ public:
 #endif
 
 //	Variables section
-#if defined(USE_DX11) //	USE_DX10
+#if defined(USE_VK) //	USE_DX11
+public:
+    VkPhysicalDevice adapter;
+    VkDevice device;
+    VkInstance instance;
+    VkSwapchainKHR swapchain;
+    VkSurfaceKHR surface;
+    VkCommandPool cmdPool;
+
+    // TODO: A command buffer manager should handle multiple buffers
+    VkCommandBuffer context;
+
+    CHWCaps Caps;
+
+    VkExtent2D swapchainExtent;
+    std::vector<VkImage> swapimages;
+    std::vector<VkImageView> swapviews;
+    VkPhysicalDeviceFeatures features;
+#elif defined(USE_DX11) //	USE_DX10
 public:
     IDXGIAdapter* m_pAdapter; //	pD3D equivalent
     ID3D11Device* pDevice; //	combine with DX9 pDevice via typedef
@@ -107,7 +125,7 @@ public:
 #ifndef _MAYA_EXPORT
     stats_manager stats_manager;
 #endif
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_DX10) || defined(USE_DX11) && !defined(USE_VK)
     void UpdateViews();
     DXGI_RATIONAL selectRefresh(u32 dwWidth, u32 dwHeight, DXGI_FORMAT fmt);
 
