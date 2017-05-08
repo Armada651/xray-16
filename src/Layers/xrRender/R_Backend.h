@@ -96,7 +96,7 @@ public:
     R_LOD LOD;
 #endif
 
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_DX10) || defined(USE_DX11) && !defined(USE_VK)
     ref_cbuffer m_aVertexConstants[MaxCBuffers];
     ref_cbuffer m_aPixelConstants[MaxCBuffers];
     ref_cbuffer m_aGeometryConstants[MaxCBuffers];
@@ -122,8 +122,13 @@ private:
 #else //	USE_DX10
     IDirect3DVertexDeclaration9* decl;
 #endif //	USE_DX10
+#ifdef USE_VK
+    ID3DVertexBuffer vb;
+    ID3DIndexBuffer ib;
+#else
     ID3DVertexBuffer* vb;
     ID3DIndexBuffer* ib;
+#endif
     u32 vb_stride;
 
     // Pixel/Vertex constants

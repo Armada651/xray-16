@@ -43,9 +43,15 @@ typedef ID3D11RasterizerState ID3DRasterizerState;
 typedef ID3D11DepthStencilState ID3DDepthStencilState;
 typedef ID3D11BlendState ID3DBlendState;
 typedef ID3D11SamplerState ID3DSamplerState;
+#ifdef USE_VK
+typedef VkBuffer ID3DBuffer;
+typedef VkBuffer ID3DVertexBuffer;
+typedef VkBuffer ID3DIndexBuffer;
+#else
 typedef ID3D11Buffer ID3DBuffer;
 typedef ID3D11Buffer ID3DVertexBuffer;
 typedef ID3D11Buffer ID3DIndexBuffer;
+#endif
 typedef ID3D11InputLayout ID3DInputLayout;
 typedef ID3D11VertexShader ID3DVertexShader;
 typedef ID3D11GeometryShader ID3DGeometryShader;

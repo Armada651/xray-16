@@ -439,9 +439,6 @@
     <ClInclude Include="..\xrRender\HWCaps.h">
       <Filter>Refactored\HW</Filter>
     </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\dx10R_Backend_Runtime.h">
-      <Filter>Refactored\Backend</Filter>
-    </ClInclude>
     <ClInclude Include="..\xrRender\FVF.h">
       <Filter>Refactored\Backend</Filter>
     </ClInclude>
@@ -727,7 +724,10 @@
     <ClInclude Include="stdafx.h">
       <Filter>Kernel</Filter>
     </ClInclude>
-    <ClInclude Include="..\xrRenderPC_R4\r4.h">
+    <ClInclude Include="..\xrRenderVK\vkR_Backend_Runtime.h">
+      <Filter>Refactored\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="r5.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1317,11 +1317,11 @@
     <ClCompile Include="xrRender_R5.cpp">
       <Filter>Kernel</Filter>
     </ClCompile>
-    <ClCompile Include="..\xrRenderPC_R4\r4.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\xrRenderVK\vkHW.cpp">
       <Filter>Refactored\HW</Filter>
+    </ClCompile>
+    <ClCompile Include="r5.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
