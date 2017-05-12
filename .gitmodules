@@ -55,3 +55,6 @@
 [submodule "src/Externals/nvapi"]
 	path = src/Externals/nvapi
 	url = https://github.com/OpenXRay/nvapi.git
+[submodule "src/Externals/glslang"]
+	path = src/Externals/glslang
+	url = https://github.com/KhronosGroup/glslang.git

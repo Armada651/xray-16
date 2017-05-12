@@ -23,6 +23,7 @@
 #include <D3D11.h>
 #include <D3Dx11core.h>
 #include <D3DCompiler.h>
+#include <ShaderLang.h>
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
