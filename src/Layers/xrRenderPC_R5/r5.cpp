@@ -766,8 +766,11 @@ LPCSTR WINAPI	D3DXGetVertexShaderProfile	(LPDIRECT3DDEVICE9	pDevice);
 
 void CRender::addShaderOption(const char* name, const char* value)
 {
-    D3D_SHADER_MACRO macro = {name, value};
-    m_ShaderOptions.push_back(macro);
+    m_ShaderOptions += "#define ";
+    m_ShaderOptions += name;
+    m_ShaderOptions += " ";
+    m_ShaderOptions += value;
+    m_ShaderOptions += "\n";
 }
 
 template <typename T>
@@ -1016,13 +1019,33 @@ public:
     }
 };
 
+struct Macro
+{
+    char* Name;
+    char* Definition;
+};
+
+xr_string GetPreamble(Macro* defines)
+{
+    xr_string result;
+    while (defines->Name && defines->Definition)
+    {
+        result += "#define ";
+        result += defines->Name;
+        result += " ";
+        result += defines->Definition;
+        result += "\n";
+    }
+    return result;
+}
+
 static inline bool match_shader_id(
     LPCSTR const debug_shader_id, LPCSTR const full_shader_id, FS_FileSet const& file_set, string_path& result);
 
 HRESULT CRender::shader_compile(LPCSTR name, DWORD const* pSrcData, UINT SrcDataLen, LPCSTR pFunctionName,
     LPCSTR pTarget, DWORD Flags, void*& result)
 {
-    D3D_SHADER_MACRO defines[128];
+    Macro defines[128];
     int def_it = 0;
     char c_smapsize[32];
     char c_sun_shafts[32];
@@ -1030,11 +1053,6 @@ HRESULT CRender::shader_compile(LPCSTR name, DWORD const* pSrcData, UINT SrcData
     char c_sun_quality[32];
 
     char sh_name[MAX_PATH] = "";
-
-    for (u32 i = 0; i < m_ShaderOptions.size(); ++i)
-    {
-        defines[def_it++] = m_ShaderOptions[i];
-    }
 
     u32 len = xr_strlen(sh_name);
     // options
@@ -1427,14 +1445,12 @@ HRESULT CRender::shader_compile(LPCSTR name, DWORD const* pSrcData, UINT SrcData
     sh_name[len] = '0' + char(o.dx10_sm4_1);
     ++len;
 
-    R_ASSERT(HW.FeatureLevel >= D3D_FEATURE_LEVEL_11_0);
-    if (HW.FeatureLevel >= D3D_FEATURE_LEVEL_11_0)
     {
         defines[def_it].Name = "SM_5";
         defines[def_it].Definition = "1";
         def_it++;
     }
-    sh_name[len] = '0' + char(HW.FeatureLevel >= D3D_FEATURE_LEVEL_11_0);
+    sh_name[len] = '1';
     ++len;
 
     if (o.dx10_minmax_sm)
@@ -1616,6 +1632,8 @@ HRESULT CRender::shader_compile(LPCSTR name, DWORD const* pSrcData, UINT SrcData
         // Enable SPIR-V and Vulkan rules when parsing HLSL
         EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules | EShMsgReadHlsl | EShMsgHlslOffsets);
 
+        xr_string preamble = m_ShaderOptions + GetPreamble(defines);
+        shader.setPreamble(preamble.c_str());
         shader.setStrings((const char**)&pSrcData, 1);
         _result = shader.parse(&HW.resources, 100, ENoProfile, false, false, messages, includer);
 

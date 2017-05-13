@@ -368,7 +368,7 @@ public:
     void addShaderOption(const char* name, const char* value);
     void clearAllShaderOptions() { m_ShaderOptions.clear(); }
 private:
-    xr_vector<D3D_SHADER_MACRO> m_ShaderOptions;
+    xr_string m_ShaderOptions;
 
 protected:
     virtual void ScreenshotImpl(ScreenshotMode mode, LPCSTR name, CMemoryWriter* memory_writer);
