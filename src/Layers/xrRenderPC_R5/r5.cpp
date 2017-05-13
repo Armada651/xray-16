@@ -14,6 +14,7 @@
 #include "Layers/xrRenderDX10/3DFluid/dx103DFluidManager.h"
 #include "Layers/xrRender/ShaderResourceTraits.h"
 #include "D3DX10Core.h"
+#include "glslang/SPIRV/GlslangToSpv.h"
 
 CRender RImplementation;
 
@@ -122,6 +123,7 @@ extern ENGINE_API BOOL r2_advanced_pp; //	advanced post process and effects
 // Just two static storage
 void CRender::create()
 {
+    glslang::InitializeProcess();
     Device.seqFrame.Add(this, REG_PRIORITY_HIGH + 0x12345678);
 
     m_skinning = -1;
@@ -458,6 +460,7 @@ void CRender::destroy()
     PSLibrary.OnDestroy();
     Device.seqFrame.Remove(this);
     r_dsgraph_destroy();
+    glslang::FinalizeProcess();
 }
 
 void CRender::reset_begin()
@@ -767,163 +770,135 @@ void CRender::addShaderOption(const char* name, const char* value)
     m_ShaderOptions.push_back(macro);
 }
 
-// XXX nitrocaster: workaround to eliminate conflict between different GUIDs from DXSDK/Windows SDK
-// 0a233719-3960-4578-9d7c-203b8b1d9cc1
-static const GUID guidShaderReflection = {0x0a233719, 0x3960, 0x4578, {0x9d, 0x7c, 0x20, 0x3b, 0x8b, 0x1d, 0x9c, 0xc1}};
-
 template <typename T>
-static HRESULT create_shader(LPCSTR const pTarget, DWORD const* buffer, u32 const buffer_size, LPCSTR const file_name,
+static bool create_shader(EShLanguage stage, glslang::TProgram& program, LPCSTR const file_name,
     T*& result, bool const disasm)
 {
-    result->sh = ShaderTypeTraits<T>::CreateHWShader(buffer, buffer_size);
+    std::vector<u32> spirv;
+    glslang::GlslangToSpv(*program.getIntermediate(stage), spirv);
+    result->sh = ShaderTypeTraits<T>::CreateHWShader(spirv.data(), spirv.size() * sizeof(u32));
 
-    ID3DShaderReflection* pReflection = 0;
-
-    HRESULT const _hr = D3DReflect(buffer, buffer_size, guidShaderReflection, (void**)&pReflection);
-    if (SUCCEEDED(_hr) && pReflection)
+    bool const _result = program.buildReflection();
+    if (_result)
     {
         // Parse constant table data
-        result->constants.parse(pReflection, ShaderTypeTraits<T>::GetShaderDest());
-
-        _RELEASE(pReflection);
+        result->constants.parse(&program, ShaderTypeTraits<T>::GetShaderDest());
     }
     else
     {
-        Msg("! D3DReflectShader %s hr == 0x%08x", file_name, _hr);
+        Msg("! buildReflection failed");
     }
 
-    return _hr;
+    return _result;
 }
 
-static HRESULT create_shader(LPCSTR const pTarget, DWORD const* buffer, u32 const buffer_size, LPCSTR const file_name,
+static bool create_shader(EShLanguage stage, glslang::TProgram& program, LPCSTR const file_name,
     void*& result, bool const disasm)
 {
-    HRESULT _result = E_FAIL;
-    if (pTarget[0] == 'p')
+    bool _result = false;
+    std::vector<u32> spirv;
+    glslang::GlslangToSpv(*program.getIntermediate(stage), spirv);
+
+    VkShaderModule module = 0;
+    VkShaderModuleCreateInfo moduleCreateInfo = {};
+    moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    moduleCreateInfo.codeSize = spirv.size() * sizeof(u32);
+    moduleCreateInfo.pCode = spirv.data();
+    VkResult _result = vkCreateShaderModule(HW.device, &moduleCreateInfo, NULL, &module);
+
+    if (stage == EShLangFragment)
     {
         SPS* sps_result = (SPS*)result;
-#ifdef USE_DX11
-        _result = HW.pDevice->CreatePixelShader(buffer, buffer_size, 0, &sps_result->ps);
-#else // #ifdef USE_DX11
-        _result = HW.pDevice->CreatePixelShader(buffer, buffer_size, &sps_result->ps);
-#endif // #ifdef USE_DX11
-        if (!SUCCEEDED(_result))
+        sps_result->ps = module;
+
+        if (!_result)
         {
             Log("! PS: ", file_name);
-            Msg("! CreatePixelShader hr == 0x%08x", _result);
-            return E_FAIL;
+            Msg("! vkCreateShaderModule failed");
+            return _result;
         }
 
-        ID3DShaderReflection* pReflection = 0;
-
-#ifdef USE_DX11
-        _result = D3DReflect(buffer, buffer_size, guidShaderReflection, (void**)&pReflection);
-#else
-        _result = D3D10ReflectShader(buffer, buffer_size, &pReflection);
-#endif
+        _result = program.buildReflection();
 
         //	Parse constant, texture, sampler binding
         //	Store input signature blob
-        if (SUCCEEDED(_result) && pReflection)
+        if (_result)
         {
             //	Let constant table parse it's data
-            sps_result->constants.parse(pReflection, RC_dest_pixel);
-
-            _RELEASE(pReflection);
+            sps_result->constants.parse(&program, RC_dest_pixel);
         }
         else
         {
             Log("! PS: ", file_name);
-            Msg("! D3DReflectShader hr == 0x%08x", _result);
+            Msg("! buildReflection failed");
         }
     }
-    else if (pTarget[0] == 'v')
+    else if (stage == EShLangVertex)
     {
         SVS* svs_result = (SVS*)result;
-#ifdef USE_DX11
-        _result = HW.pDevice->CreateVertexShader(buffer, buffer_size, 0, &svs_result->vs);
-#else // #ifdef USE_DX11
-        _result = HW.pDevice->CreateVertexShader(buffer, buffer_size, &svs_result->vs);
-#endif // #ifdef USE_DX11
+        svs_result->vs = module;
 
-        if (!SUCCEEDED(_result))
+        if (!_result)
         {
             Log("! VS: ", file_name);
-            Msg("! CreatePixelShader hr == 0x%08x", _result);
+            Msg("! vkCreateShaderModule failed");
             return E_FAIL;
         }
 
-        ID3DShaderReflection* pReflection = 0;
-#ifdef USE_DX11
-        _result = D3DReflect(buffer, buffer_size, guidShaderReflection, (void**)&pReflection);
-#else
-        _result = D3D10ReflectShader(buffer, buffer_size, &pReflection);
-#endif
+        _result = program.buildReflection();
 
         //	Parse constant, texture, sampler binding
         //	Store input signature blob
-        if (SUCCEEDED(_result) && pReflection)
+        if (_result)
         {
             //	TODO: DX10: share the same input signatures
+            //  TODO: VK: parse input signature
 
             //	Store input signature (need only for VS)
             // CHK_DX( D3DxxGetInputSignatureBlob(pShaderBuf->GetBufferPointer(), pShaderBuf->GetBufferSize(),
             // &_vs->signature) );
-            ID3DBlob* pSignatureBlob;
+            /*ID3DBlob* pSignatureBlob;
             CHK_DX(D3DGetInputSignatureBlob(buffer, buffer_size, &pSignatureBlob));
             VERIFY(pSignatureBlob);
 
             svs_result->signature = RImplementation.Resources->_CreateInputSignature(pSignatureBlob);
 
-            _RELEASE(pSignatureBlob);
+            _RELEASE(pSignatureBlob);*/
 
             //	Let constant table parse it's data
-            svs_result->constants.parse(pReflection, RC_dest_vertex);
-
-            _RELEASE(pReflection);
+            svs_result->constants.parse(&program, RC_dest_vertex);
         }
         else
         {
             Log("! VS: ", file_name);
-            Msg("! D3DXFindShaderComment hr == 0x%08x", _result);
+            Msg("! buildReflection failed");
         }
     }
-    else if (pTarget[0] == 'g')
+    else if (stage == EShLangGeometry)
     {
         SGS* sgs_result = (SGS*)result;
-#ifdef USE_DX11
-        _result = HW.pDevice->CreateGeometryShader(buffer, buffer_size, 0, &sgs_result->gs);
-#else // #ifdef USE_DX11
-        _result = HW.pDevice->CreateGeometryShader(buffer, buffer_size, &sgs_result->gs);
-#endif // #ifdef USE_DX11
-        if (!SUCCEEDED(_result))
+        sgs_result->gs = module;
+
+        if (!_result)
         {
             Log("! GS: ", file_name);
-            Msg("! CreateGeometryShaderhr == 0x%08x", _result);
+            Msg("! vkCreateShaderModule failed");
             return E_FAIL;
         }
 
-        ID3DShaderReflection* pReflection = 0;
-
-#ifdef USE_DX11
-        _result = D3DReflect(buffer, buffer_size, guidShaderReflection, (void**)&pReflection);
-#else
-        _result = D3D10ReflectShader(buffer, buffer_size, &pReflection);
-#endif
+        _result = program.buildReflection();
 
         //	Parse constant, texture, sampler binding
         //	Store input signature blob
-        if (SUCCEEDED(_result) && pReflection)
+        if (_result)
         {
             //	Let constant table parse it's data
-            sgs_result->constants.parse(pReflection, RC_dest_geometry);
-
-            _RELEASE(pReflection);
+            sgs_result->constants.parse(&program, RC_dest_geometry);
         }
         else
         {
             Log("! PS: ", file_name);
-            Msg("! D3DReflectShader hr == 0x%08x", _result);
+            Msg("! buildReflection failed");
         }
     }
     //	else if (pTarget[0] == 'c') {
@@ -962,24 +937,25 @@ static HRESULT create_shader(LPCSTR const pTarget, DWORD const* buffer, u32 cons
     //			Msg	("! D3DReflectShader hr == 0x%08x", _result);
     //		}
     //	}
-    else if (pTarget[0] == 'c')
+    else if (stage == EShLangCompute)
     {
-        _result = create_shader(pTarget, buffer, buffer_size, file_name, (SCS*&)result, disasm);
+        _result = create_shader(stage, program, file_name, (SCS*&)result, disasm);
     }
-    else if (pTarget[0] == 'h')
+    else if (stage == EShLangTessControl)
     {
-        _result = create_shader(pTarget, buffer, buffer_size, file_name, (SHS*&)result, disasm);
+        _result = create_shader(stage, program, file_name, (SHS*&)result, disasm);
     }
-    else if (pTarget[0] == 'd')
+    else if (stage == EShLangTessEvaluation)
     {
-        _result = create_shader(pTarget, buffer, buffer_size, file_name, (SDS*&)result, disasm);
+        _result = create_shader(stage, program, file_name, (SDS*&)result, disasm);
     }
     else
     {
         NODEFAULT;
     }
 
-    if (disasm)
+    // TODO: VK: Support SPIR-V assembly dumping
+    /*if (disasm)
     {
         ID3DBlob* disasm = 0;
         D3DDisassemble(buffer, buffer_size, FALSE, 0, &disasm);
@@ -991,44 +967,52 @@ static HRESULT create_shader(LPCSTR const pTarget, DWORD const* buffer, u32 cons
         W->w(disasm->GetBufferPointer(), (u32)disasm->GetBufferSize());
         FS.w_close(W);
         _RELEASE(disasm);
-    }
+    }*/
 
     return _result;
 }
 
 //--------------------------------------------------------------------------------------------------------------
-class includer : public ID3DInclude
+class Includer : public glslang::TShader::Includer
 {
 public:
-    HRESULT __stdcall Open(
-        D3D10_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes)
+    IncludeResult* createResult(const char* headerName, IReader* R)
     {
-        string_path pname;
-        strconcat(sizeof(pname), pname, GlobalEnv.Render->getShaderPath(), pFileName);
-        IReader* R = FS.r_open("$game_shaders$", pname);
-        if (0 == R)
-        {
-            // possibly in shared directory or somewhere else - open directly
-            R = FS.r_open("$game_shaders$", pFileName);
-            if (0 == R)
-                return E_FAIL;
-        }
-
         // duplicate and zero-terminate
         u32 size = R->length();
-        u8* data = xr_alloc<u8>(size + 1);
+        char* data = xr_alloc<char>(size + 1);
         CopyMemory(data, R->pointer(), size);
         data[size] = 0;
         FS.r_close(R);
 
-        *ppData = data;
-        *pBytes = size;
-        return D3D_OK;
+        return new IncludeResult(headerName, data, size, data);
     }
-    HRESULT __stdcall Close(LPCVOID pData)
+
+    IncludeResult* includeSystem(const char* headerName, const char* includerName, size_t inclusionDepth)
     {
-        xr_free(pData);
-        return D3D_OK;
+        // possibly in shared directory or somewhere else - open directly
+        IReader* R = FS.r_open("$game_shaders$", headerName);
+        if (0 == R)
+            return nullptr;
+
+        return createResult(headerName, R);
+    }
+
+    IncludeResult* includeLocal(const char* headerName, const char* includerName, size_t inclusionDepth)
+    {
+        string_path pname;
+        strconcat(sizeof(pname), pname, GlobalEnv.Render->getShaderPath(), headerName);
+        IReader* R = FS.r_open("$game_shaders$", pname);
+        if (0 == R)
+            return nullptr;
+
+        return createResult(headerName, R);
+    }
+
+    void releaseInclude(IncludeResult* pResult)
+    {
+        xr_free(pResult->userData);
+        delete pResult;
     }
 };
 
@@ -1560,43 +1544,21 @@ HRESULT CRender::shader_compile(LPCSTR name, DWORD const* pSrcData, UINT SrcData
     def_it++;
 
     //
-    if (0 == xr_strcmp(pFunctionName, "main"))
-    {
-        if ('v' == pTarget[0])
-        {
-            if (HW.FeatureLevel == D3D_FEATURE_LEVEL_10_0)
-                pTarget = "vs_4_0";
-            else if (HW.FeatureLevel == D3D_FEATURE_LEVEL_10_1)
-                pTarget = "vs_4_1";
-            else if (HW.FeatureLevel == D3D_FEATURE_LEVEL_11_0)
-                pTarget = "vs_5_0";
-        }
-        else if ('p' == pTarget[0])
-        {
-            if (HW.FeatureLevel == D3D_FEATURE_LEVEL_10_0)
-                pTarget = "ps_4_0";
-            else if (HW.FeatureLevel == D3D_FEATURE_LEVEL_10_1)
-                pTarget = "ps_4_1";
-            else if (HW.FeatureLevel == D3D_FEATURE_LEVEL_11_0)
-                pTarget = "ps_5_0";
-        }
-        else if ('g' == pTarget[0])
-        {
-            if (HW.FeatureLevel == D3D_FEATURE_LEVEL_10_0)
-                pTarget = "gs_4_0";
-            else if (HW.FeatureLevel == D3D_FEATURE_LEVEL_10_1)
-                pTarget = "gs_4_1";
-            else if (HW.FeatureLevel == D3D_FEATURE_LEVEL_11_0)
-                pTarget = "gs_5_0";
-        }
-        else if ('c' == pTarget[0])
-        {
-            if (HW.FeatureLevel == D3D_FEATURE_LEVEL_11_0)
-                pTarget = "cs_5_0";
-        }
-    }
+    EShLanguage stage;
+    if ('v' == pTarget[0])
+        stage = EShLangVertex;
+    else if ('p' == pTarget[0])
+        stage = EShLangFragment;
+    else if ('g' == pTarget[0])
+        stage = EShLangGeometry;
+    else if ('h' == pTarget[0])
+        stage = EShLangTessControl;
+    else if ('d' == pTarget[0])
+        stage = EShLangTessEvaluation;
+    else if ('c' == pTarget[0])
+        stage = EShLangCompute;
 
-    HRESULT _result = E_FAIL;
+    bool _result = false;
 
     string_path folder_name, folder;
     xr_strcpy(folder, "r3\\objects\\r4\\");
@@ -1631,7 +1593,8 @@ HRESULT CRender::shader_compile(LPCSTR name, DWORD const* pSrcData, UINT SrcData
         xr_strcat(file_name, temp_file_name);
     }
 
-    if (FS.exist(file_name))
+    // TODO: Load the cached SPIR-V once we figure out how to store the reflection data
+    /*if (FS.exist(file_name))
     {
         IReader* file = FS.r_open(file_name);
         if (file->length() > 4)
@@ -1639,39 +1602,50 @@ HRESULT CRender::shader_compile(LPCSTR name, DWORD const* pSrcData, UINT SrcData
             u32 crc = file->r_u32();
             u32 crcComp = crc32(file->pointer(), file->elapsed());
             if (crcComp == crc)
-                _result = create_shader(pTarget, (DWORD*)file->pointer(), file->elapsed(), file_name, result, o.disasm);
+                _result = create_shader(pTarget, (u32*)file->pointer(), file->elapsed(), file_name, result, o.disasm);
         }
         file->close();
-    }
+    }*/
 
-    if (FAILED(_result))
+    if (_result)
     {
-        includer Includer;
-        LPD3DBLOB pShaderBuf = NULL;
-        LPD3DBLOB pErrorBuf = NULL;
-        _result = D3DCompile(pSrcData, SrcDataLen,
-            "", // NULL, //LPCSTR pFileName,	//	NVPerfHUD bug workaround.
-            defines, &Includer, pFunctionName, pTarget, Flags, 0, &pShaderBuf, &pErrorBuf);
+        Includer includer;
+        glslang::TShader shader(stage);
+        glslang::TProgram program;
 
-        if (SUCCEEDED(_result))
+        // Enable SPIR-V and Vulkan rules when parsing HLSL
+        EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules | EShMsgReadHlsl | EShMsgHlslOffsets);
+
+        shader.setStrings((const char**)&pSrcData, 1);
+        _result = shader.parse(&HW.resources, 100, ENoProfile, false, false, messages, includer);
+
+        if (_result)
         {
-            IWriter* file = FS.w_open(file_name);
-            u32 crc = crc32(pShaderBuf->GetBufferPointer(), pShaderBuf->GetBufferSize());
-            file->w_u32(crc);
-            file->w(pShaderBuf->GetBufferPointer(), (u32)pShaderBuf->GetBufferSize());
-            FS.w_close(file);
+            program.addShader(&shader);
+            _result = program.link(messages);
+        }
 
-            _result = create_shader(pTarget, (DWORD*)pShaderBuf->GetBufferPointer(), (u32)pShaderBuf->GetBufferSize(),
+        if (_result)
+        {
+            // TODO: Write the cached SPIR-V once we figure out how to store the reflection data
+            /*std::vector<u32> spirv;
+            glslang::GlslangToSpv(*program.getIntermediate(stage), spirv);
+
+            IWriter* file = FS.w_open(file_name);
+            u32 crc = crc32(spirv.data(), spirv.size() * sizeof(u32));
+            file->w_u32(crc);
+            file->w(spirv.data(), spirv.size() * sizeof(u32));
+            FS.w_close(file);*/
+
+            _result = create_shader(stage, program,
                 file_name, result, o.disasm);
         }
         else
         {
             //			Msg						( "! shader compilation failed" );
             Log("! ", file_name);
-            if (pErrorBuf)
-                Log("! error: ", (LPCSTR)pErrorBuf->GetBufferPointer());
-            else
-                Msg("Can't compile shader hr=0x%08x", _result);
+            Log("! error: ", shader.getInfoLog());
+            Log("! debug: ", shader.getInfoDebugLog());
         }
     }
 

@@ -122,13 +122,8 @@ private:
 #else //	USE_DX10
     IDirect3DVertexDeclaration9* decl;
 #endif //	USE_DX10
-#ifdef USE_VK
-    ID3DVertexBuffer vb;
-    ID3DIndexBuffer ib;
-#else
-    ID3DVertexBuffer* vb;
-    ID3DIndexBuffer* ib;
-#endif
+    D3DVertexBuffer vb;
+    D3DIndexBuffer ib;
     u32 vb_stride;
 
     // Pixel/Vertex constants

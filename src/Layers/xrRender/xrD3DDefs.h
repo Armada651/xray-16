@@ -27,4 +27,32 @@ typedef IDirect3DStateBlock9 ID3DState;
 
 #endif // USE_DX10
 
+#ifdef USE_VK
+typedef VkBuffer D3DBuffer;
+typedef VkBuffer D3DVertexBuffer;
+typedef VkBuffer D3DIndexBuffer;
+typedef VkShaderModule D3DVertexShader;
+typedef VkShaderModule D3DGeometryShader;
+typedef VkShaderModule D3DPixelShader;
+typedef VkShaderModule D3DHullShader;
+typedef VkShaderModule D3DDomainShader;
+typedef VkShaderModule D3DComputeShader;
+#else
+#if defined(USE_DX11) || defined(USE_DX10)
+typedef ID3DBuffer* D3DBuffer;
+#endif
+typedef ID3DVertexBuffer* D3DVertexBuffer;
+typedef ID3DIndexBuffer* D3DIndexBuffer;
+typedef ID3DVertexShader* D3DVertexShader;
+#if defined(USE_DX11) || defined(USE_DX10)
+typedef ID3DGeometryShader* D3DGeometryShader;
+#endif
+#ifdef USE_DX11
+typedef ID3D11HullShader* D3DHullShader;
+typedef ID3D11DomainShader* D3DDomainShader;
+typedef ID3D11ComputeShader* D3DComputeShader;
+#endif
+typedef ID3DPixelShader* D3DPixelShader;
+#endif
+
 #endif // xrD3DDefs_included

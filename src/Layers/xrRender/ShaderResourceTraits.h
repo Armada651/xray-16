@@ -11,15 +11,25 @@ template <>
 struct ShaderTypeTraits<SHS>
 {
     typedef CResourceManager::map_HS MapType;
-    typedef ID3D11HullShader DXIface;
+    typedef D3DHullShader DXIface;
 
     static inline const char* GetShaderExt() { return ".hs"; }
     static inline const char* GetCompilationTarget() { return "hs_5_0"; }
-    static inline DXIface* CreateHWShader(DWORD const* buffer, size_t size)
+    static inline DXIface CreateHWShader(DWORD const* buffer, size_t size)
     {
-        DXIface* hs = 0;
+#ifdef USE_VK
+        VkShaderModule module = 0;
+        VkShaderModuleCreateInfo moduleCreateInfo = {};
+        moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        moduleCreateInfo.codeSize = size;
+        moduleCreateInfo.pCode = (const u32*)buffer;
+        CHK_VK(vkCreateShaderModule(HW.device, &moduleCreateInfo, NULL, &module));
+        return module;
+#else
+        DXIface hs = 0;
         R_CHK(HW.pDevice->CreateHullShader(buffer, size, NULL, &hs));
         return hs;
+#endif
     }
 
     static inline u32 GetShaderDest() { return RC_dest_hull; }
@@ -29,15 +39,25 @@ template <>
 struct ShaderTypeTraits<SDS>
 {
     typedef CResourceManager::map_DS MapType;
-    typedef ID3D11DomainShader DXIface;
+    typedef D3DDomainShader DXIface;
 
     static inline const char* GetShaderExt() { return ".ds"; }
     static inline const char* GetCompilationTarget() { return "ds_5_0"; }
-    static inline DXIface* CreateHWShader(DWORD const* buffer, size_t size)
+    static inline DXIface CreateHWShader(DWORD const* buffer, size_t size)
     {
-        DXIface* hs = 0;
+#ifdef USE_VK
+        VkShaderModule module = 0;
+        VkShaderModuleCreateInfo moduleCreateInfo = {};
+        moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        moduleCreateInfo.codeSize = size;
+        moduleCreateInfo.pCode = (const u32*)buffer;
+        CHK_VK(vkCreateShaderModule(HW.device, &moduleCreateInfo, NULL, &module));
+        return module;
+#else
+        DXIface hs = 0;
         R_CHK(HW.pDevice->CreateDomainShader(buffer, size, NULL, &hs));
         return hs;
+#endif
     }
 
     static inline u32 GetShaderDest() { return RC_dest_domain; }
@@ -47,15 +67,25 @@ template <>
 struct ShaderTypeTraits<SCS>
 {
     typedef CResourceManager::map_CS MapType;
-    typedef ID3D11ComputeShader DXIface;
+    typedef D3DComputeShader DXIface;
 
     static inline const char* GetShaderExt() { return ".cs"; }
     static inline const char* GetCompilationTarget() { return "cs_5_0"; }
-    static inline DXIface* CreateHWShader(DWORD const* buffer, size_t size)
+    static inline DXIface CreateHWShader(DWORD const* buffer, size_t size)
     {
-        DXIface* cs = 0;
+#ifdef USE_VK
+        VkShaderModule module = 0;
+        VkShaderModuleCreateInfo moduleCreateInfo = {};
+        moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        moduleCreateInfo.codeSize = size;
+        moduleCreateInfo.pCode = (const u32*)buffer;
+        CHK_VK(vkCreateShaderModule(HW.device, &moduleCreateInfo, NULL, &module));
+        return module;
+#else
+        DXIface cs = 0;
         R_CHK(HW.pDevice->CreateComputeShader(buffer, size, NULL, &cs));
         return cs;
+#endif
     }
 
     static inline u32 GetShaderDest() { return RC_dest_compute; }

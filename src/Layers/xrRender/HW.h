@@ -67,6 +67,7 @@ public:
     VkCommandBuffer context;
 
     CHWCaps Caps;
+    TBuiltInResource resources;
 
     VkExtent2D swapchainExtent;
     std::vector<VkImage> swapimages;
@@ -125,7 +126,9 @@ public:
 #ifndef _MAYA_EXPORT
     stats_manager stats_manager;
 #endif
-#if defined(USE_DX10) || defined(USE_DX11) && !defined(USE_VK)
+#if defined(USE_VK)
+    void initResources(TBuiltInResource &Resources);
+#elif defined(USE_DX10) || defined(USE_DX11)
     void UpdateViews();
     DXGI_RATIONAL selectRefresh(u32 dwWidth, u32 dwHeight, DXGI_FORMAT fmt);
 
