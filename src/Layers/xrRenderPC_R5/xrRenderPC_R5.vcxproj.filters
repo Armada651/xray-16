@@ -1323,5 +1323,8 @@
     <ClCompile Include="r5.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\xrRenderVK\vkr_constants.cpp">
+      <Filter>Refactored\Execution &amp; 3D\Shaders\Resources</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

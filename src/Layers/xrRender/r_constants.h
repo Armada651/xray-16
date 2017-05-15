@@ -149,7 +149,10 @@ public:
 private:
     void fatal(LPCSTR s);
 
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_VK)
+    BOOL parseConstants(glslang::TProgram& program, u32 destination);
+    BOOL parseSampler(glslang::TProgram& program, int index, u32 destination);
+#elif defined(USE_DX10) || defined(USE_DX11)
     BOOL parseConstants(ID3DShaderReflectionConstantBuffer* pTable, u32 destination);
     BOOL parseResources(ID3DShaderReflection* pReflection, int ResNum, u32 destination);
 #endif // USE_DX10
