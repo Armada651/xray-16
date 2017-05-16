@@ -68,11 +68,12 @@ public:
 
     CHWCaps Caps;
     TBuiltInResource resources;
+    VkPhysicalDeviceFeatures features;
+    VkPhysicalDeviceMemoryProperties memoryProperties;
 
     VkExtent2D swapchainExtent;
     std::vector<VkImage> swapimages;
     std::vector<VkImageView> swapviews;
-    VkPhysicalDeviceFeatures features;
 #elif defined(USE_DX11) //	USE_DX10
 public:
     IDXGIAdapter* m_pAdapter; //	pD3D equivalent

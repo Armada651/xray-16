@@ -158,13 +158,13 @@ ICF void CBackend::set_VS(ID3DVertexShader* _vs, LPCSTR _n)
 
 ICF void CBackend::set_Vertices(ID3DVertexBuffer* _vb, u32 _vb_stride)
 {
-    if ((vb != *_vb) || (vb_stride != _vb_stride))
+    if ((vb != _vb) || (vb_stride != _vb_stride))
     {
         PGO(Msg("PGO:VB:%x,%d", _vb, _vb_stride));
 #ifdef DEBUG
         stat.vb++;
 #endif
-        vb = *_vb;
+        vb = _vb;
         vb_stride = _vb_stride;
         // CHK_DX           (HW.pDevice->SetStreamSource(0,vb,0,vb_stride));
         // UINT StreamNumber,
@@ -178,20 +178,20 @@ ICF void CBackend::set_Vertices(ID3DVertexBuffer* _vb, u32 _vb_stride)
         // const UINT *pStrides,
         // const UINT *pOffsets
         VkDeviceSize iOffset = 0;
-        vkCmdBindVertexBuffers(HW.context, 0, 1, _vb, &iOffset);
+        vkCmdBindVertexBuffers(HW.context, 0, 1, &_vb->m_buffer, &iOffset);
     }
 }
 
 ICF void CBackend::set_Indices(ID3DIndexBuffer* _ib)
 {
-    if (ib != *_ib)
+    if (ib != _ib)
     {
         PGO(Msg("PGO:IB:%x", _ib));
 #ifdef DEBUG
         stat.ib++;
 #endif
-        ib = *_ib;
-        vkCmdBindIndexBuffer(HW.context, *_ib, 0, VK_INDEX_TYPE_UINT16);
+        ib = _ib;
+        vkCmdBindIndexBuffer(HW.context, _ib->m_buffer, 0, VK_INDEX_TYPE_UINT16);
     }
 }
 

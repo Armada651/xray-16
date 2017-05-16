@@ -58,7 +58,7 @@ void CHW::CreateD3D()
     createInfo.pApplicationInfo = &app_info;
 
     vkCreateInstance(&createInfo, NULL, &instance);
-    InitResources(resources);
+    initResources(resources);
 }
 
 void CHW::DestroyD3D()
@@ -89,6 +89,7 @@ void CHW::CreateDevice(HWND m_hWnd, bool move_window)
 
     // Get the physical device features.
     vkGetPhysicalDeviceFeatures(adapter, &features);
+    vkGetPhysicalDeviceMemoryProperties(adapter, &memoryProperties);
 
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(adapter, &queueFamilyCount, NULL);

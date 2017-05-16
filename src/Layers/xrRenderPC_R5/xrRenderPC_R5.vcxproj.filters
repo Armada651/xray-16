@@ -23,9 +23,6 @@
     <Filter Include="Details">
       <UniqueIdentifier>{179066b7-f1d7-487a-b10a-c70dc816a0ab}</UniqueIdentifier>
     </Filter>
-    <Filter Include="dx9 to dx10 Utils">
-      <UniqueIdentifier>{10144036-b3a7-4000-ac29-5c6776d23f1d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Glows">
       <UniqueIdentifier>{5f445d93-696e-4177-a85e-fe5aea1ce9f7}</UniqueIdentifier>
     </Filter>
@@ -185,6 +182,9 @@
     <Filter Include="StateManager">
       <UniqueIdentifier>{771cc742-0aed-4ecb-a91c-8c48107eebd0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dx9 to vk Utils">
+      <UniqueIdentifier>{10144036-b3a7-4000-ac29-5c6776d23f1d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\xrRenderDX10\3DFluid\dx103DFluidData.h">
@@ -256,14 +256,11 @@
     <ClInclude Include="..\xrRender\DetailModel.h">
       <Filter>Details</Filter>
     </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\dx10BufferUtils.h">
-      <Filter>dx9 to dx10 Utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\xrRenderDX10\dx10StateUtils.h">
-      <Filter>dx9 to dx10 Utils</Filter>
+      <Filter>dx9 to vk Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\xrRenderDX10\dx10TextureUtils.h">
-      <Filter>dx9 to dx10 Utils</Filter>
+      <Filter>dx9 to vk Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\xrRender\RenderFactory.h">
       <Filter>Interfase implementations\RenderFactory</Filter>
@@ -369,9 +366,6 @@
     </ClInclude>
     <ClInclude Include="..\xrRenderDX10\MSAA\dx10MSAABlender.h">
       <Filter>Interfase implementations\MSAARender</Filter>
-    </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\DXCommonTypes.h">
-      <Filter>Kernel</Filter>
     </ClInclude>
     <ClInclude Include="..\xrRender\xrD3DDefs.h">
       <Filter>Kernel</Filter>
@@ -730,6 +724,12 @@
     <ClInclude Include="r5.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\xrRenderVK\DXCommonTypes.h">
+      <Filter>Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\vkBufferUtils.h">
+      <Filter>dx9 to vk Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\xrRenderDX10\3DFluid\dx103DFluidData.cpp">
@@ -909,14 +909,11 @@
     <ClCompile Include="..\xrRender\DetailModel.cpp">
       <Filter>Details</Filter>
     </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\dx10BufferUtils.cpp">
-      <Filter>dx9 to dx10 Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\xrRenderDX10\dx10StateUtils.cpp">
-      <Filter>dx9 to dx10 Utils</Filter>
+      <Filter>dx9 to vk Utils</Filter>
     </ClCompile>
     <ClCompile Include="..\xrRenderDX10\dx10TextureUtils.cpp">
-      <Filter>dx9 to dx10 Utils</Filter>
+      <Filter>dx9 to vk Utils</Filter>
     </ClCompile>
     <ClCompile Include="..\xrRender\dxRenderFactory.cpp">
       <Filter>Interfase implementations\RenderFactory</Filter>
@@ -1057,9 +1054,6 @@
       <Filter>Refactored\Backend</Filter>
     </ClCompile>
     <ClCompile Include="..\xrRenderDX10\dx10ConstantBuffer.cpp">
-      <Filter>Refactored\Execution &amp; 3D\Shaders\Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\dx10r_constants.cpp">
       <Filter>Refactored\Execution &amp; 3D\Shaders\Resources</Filter>
     </ClCompile>
     <ClCompile Include="..\xrRenderDX10\dx10SH_RT.cpp">
@@ -1325,6 +1319,12 @@
     </ClCompile>
     <ClCompile Include="..\xrRenderVK\vkr_constants.cpp">
       <Filter>Refactored\Execution &amp; 3D\Shaders\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\DXCommonTypes.cpp">
+      <Filter>Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\vkBufferUtils.cpp">
+      <Filter>dx9 to vk Utils</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
