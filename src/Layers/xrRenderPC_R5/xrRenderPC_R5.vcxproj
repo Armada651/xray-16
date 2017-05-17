@@ -294,8 +294,6 @@
     <ClCompile Include="..\xrRenderDX10\Blender_Recorder_R3.cpp" />
     <ClCompile Include="..\xrRenderDX10\DX10 Rain\dx10RainBlender.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10DetailManager_VS.cpp" />
-    <ClCompile Include="..\xrRenderDX10\dx10ResourceManager_Resources.cpp" />
-    <ClCompile Include="..\xrRenderDX10\dx10ResourceManager_Scripting.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10r_constants_cache.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10SH_RT.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10SH_Texture.cpp" />
@@ -370,6 +368,8 @@
     <ClCompile Include="..\xrRenderVK\DXCommonTypes.cpp" />
     <ClCompile Include="..\xrRenderVK\vkConstantBuffer.cpp" />
     <ClCompile Include="..\xrRenderVK\vkHW.cpp" />
+    <ClCompile Include="..\xrRenderVK\vkResourceManager_Resources.cpp" />
+    <ClCompile Include="..\xrRenderVK\vkResourceManager_Scripting.cpp" />
     <ClCompile Include="..\xrRenderVK\vkr_constants.cpp" />
     <ClCompile Include="..\xrRender\Animation.cpp" />
     <ClCompile Include="..\xrRender\blenders\Blender.cpp" />

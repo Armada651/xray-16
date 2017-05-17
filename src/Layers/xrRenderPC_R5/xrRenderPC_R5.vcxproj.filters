@@ -1083,12 +1083,6 @@
     <ClCompile Include="..\xrRenderDX10\dx10r_constants_cache.cpp">
       <Filter>Refactored\Execution &amp; 3D\Shaders\Resources\dx10_R_shader</Filter>
     </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\dx10ResourceManager_Resources.cpp">
-      <Filter>Refactored\Execution &amp; 3D\Shaders\ShaderManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\dx10ResourceManager_Scripting.cpp">
-      <Filter>Refactored\Execution &amp; 3D\Shaders\ShaderManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\xrRender\ETextureParams.cpp">
       <Filter>Refactored\Execution &amp; 3D\Shaders\ShaderManager</Filter>
     </ClCompile>
@@ -1325,6 +1319,12 @@
     </ClCompile>
     <ClCompile Include="..\xrRenderVK\vkBufferUtils.cpp">
       <Filter>dx9 to vk Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\vkResourceManager_Resources.cpp">
+      <Filter>Refactored\Execution &amp; 3D\Shaders\ShaderManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\vkResourceManager_Scripting.cpp">
+      <Filter>Refactored\Execution &amp; 3D\Shaders\ShaderManager</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
