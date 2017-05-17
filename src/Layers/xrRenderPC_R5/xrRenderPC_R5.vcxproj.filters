@@ -122,9 +122,6 @@
     <Filter Include="Refactored\Execution &amp; 3D\Shaders\Resources">
       <UniqueIdentifier>{812d9e1c-812d-4ace-8822-740f2f4feacb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Refactored\Execution &amp; 3D\Shaders\Resources\dx10_R_shader">
-      <UniqueIdentifier>{e970d7dc-e6ac-434d-98bd-4aabfa1e65e3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Refactored\Execution &amp; 3D\Shaders\ShaderManager">
       <UniqueIdentifier>{68fe54d5-b6f6-4e39-8a1f-73306431e91a}</UniqueIdentifier>
     </Filter>
@@ -184,6 +181,9 @@
     </Filter>
     <Filter Include="dx9 to vk Utils">
       <UniqueIdentifier>{10144036-b3a7-4000-ac29-5c6776d23f1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Refactored\Execution &amp; 3D\Shaders\Resources\vk_R_shader">
+      <UniqueIdentifier>{e970d7dc-e6ac-434d-98bd-4aabfa1e65e3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -484,11 +484,8 @@
     <ClInclude Include="..\xrRenderPC_R5\CSCompiler.h">
       <Filter>Refactored\Execution &amp; 3D\Shaders\Resources</Filter>
     </ClInclude>
-    <ClInclude Include="..\xrRenderDX10\dx10r_constants_cache.h">
-      <Filter>Refactored\Execution &amp; 3D\Shaders\Resources\dx10_R_shader</Filter>
-    </ClInclude>
     <ClInclude Include="..\xrRender\r_constants_cache.h">
-      <Filter>Refactored\Execution &amp; 3D\Shaders\Resources\dx10_R_shader</Filter>
+      <Filter>Refactored\Execution &amp; 3D\Shaders\Resources\vk_R_shader</Filter>
     </ClInclude>
     <ClInclude Include="..\xrRender\ETextureParams.h">
       <Filter>Refactored\Execution &amp; 3D\Shaders\ShaderManager</Filter>
@@ -729,6 +726,9 @@
     </ClInclude>
     <ClInclude Include="..\xrRenderVK\vkBufferUtils.h">
       <Filter>dx9 to vk Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderVK\vkr_constants_cache.h">
+      <Filter>Refactored\Execution &amp; 3D\Shaders\Resources\vk_R_shader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1080,9 +1080,6 @@
     <ClCompile Include="..\xrRenderPC_R5\CSCompiler.cpp">
       <Filter>Refactored\Execution &amp; 3D\Shaders\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\dx10r_constants_cache.cpp">
-      <Filter>Refactored\Execution &amp; 3D\Shaders\Resources\dx10_R_shader</Filter>
-    </ClCompile>
     <ClCompile Include="..\xrRender\ETextureParams.cpp">
       <Filter>Refactored\Execution &amp; 3D\Shaders\ShaderManager</Filter>
     </ClCompile>
@@ -1325,6 +1322,9 @@
     </ClCompile>
     <ClCompile Include="..\xrRenderVK\vkResourceManager_Scripting.cpp">
       <Filter>Refactored\Execution &amp; 3D\Shaders\ShaderManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\vkr_constants_cache.cpp">
+      <Filter>Refactored\Execution &amp; 3D\Shaders\Resources\vk_R_shader</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
