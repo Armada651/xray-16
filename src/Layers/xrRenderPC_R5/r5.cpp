@@ -324,7 +324,7 @@ void CRender::create()
         o.ssao_opt_data = false;
 
     o.dx10_sm4_1 = ps_r2_ls_flags.test((u32)R3FLAG_USE_DX10_1);
-    o.dx10_sm4_1 = o.dx10_sm4_1 && (HW.FeatureLevel >= D3D_FEATURE_LEVEL_10_1);
+    o.dx10_sm4_1 = o.dx10_sm4_1;
 
     //	MSAA option dependencies
 
@@ -332,12 +332,11 @@ void CRender::create()
     o.dx10_msaa_samples = (1 << ps_r3_msaa);
 
     o.dx10_msaa_opt = ps_r2_ls_flags.test(R3FLAG_MSAA_OPT);
-    o.dx10_msaa_opt = o.dx10_msaa_opt && o.dx10_msaa && (HW.FeatureLevel >= D3D_FEATURE_LEVEL_10_1) ||
-        o.dx10_msaa && (HW.FeatureLevel >= D3D_FEATURE_LEVEL_11_0);
+    o.dx10_msaa_opt = o.dx10_msaa_opt && o.dx10_msaa || o.dx10_msaa && HW.features.sampleRateShading;
 
     // o.dx10_msaa_hybrid	= ps_r2_ls_flags.test(R3FLAG_MSAA_HYBRID);
     o.dx10_msaa_hybrid = ps_r2_ls_flags.test((u32)R3FLAG_USE_DX10_1);
-    o.dx10_msaa_hybrid &= !o.dx10_msaa_opt && o.dx10_msaa && (HW.FeatureLevel >= D3D_FEATURE_LEVEL_10_1);
+    o.dx10_msaa_hybrid &= !o.dx10_msaa_opt && o.dx10_msaa;
 
     //	Allow alpha test MSAA for DX10.0
 
@@ -369,7 +368,7 @@ void CRender::create()
     o.dx10_minmax_sm_screenarea_threshold = 1600 * 1200;
 
     o.dx11_enable_tessellation =
-        HW.FeatureLevel >= D3D_FEATURE_LEVEL_11_0 && ps_r2_ls_flags_ext.test(R2FLAGEXT_ENABLE_TESSELLATION);
+        HW.features.tessellationShader && ps_r2_ls_flags_ext.test(R2FLAGEXT_ENABLE_TESSELLATION);
 
     if (o.dx10_minmax_sm == MMSM_AUTODETECT)
     {
@@ -422,7 +421,7 @@ void CRender::create()
 
     rmNormal();
     marker = 0;
-    D3D_QUERY_DESC qdesc;
+    /*D3D_QUERY_DESC qdesc;
     qdesc.MiscFlags = 0;
     qdesc.Query = D3D_QUERY_EVENT;
     ZeroMemory(q_sync_point, sizeof(q_sync_point));
@@ -435,7 +434,7 @@ void CRender::create()
     // R_CHK						(HW.pDevice->CreateQuery(D3DQUERYTYPE_EVENT,&q_sync_point[1]));
     for (u32 i = 0; i < HW.Caps.iGPUNum; ++i)
         R_CHK(HW.pDevice->CreateQuery(&qdesc, &q_sync_point[i]));
-    HW.pContext->End(q_sync_point[0]);
+    HW.pContext->End(q_sync_point[0]);*/
 
     xrRender_apply_tf();
     ::PortalTraverser.initialize();
@@ -451,8 +450,8 @@ void CRender::destroy()
     ::PortalTraverser.destroy();
     //_RELEASE					(q_sync_point[1]);
     //_RELEASE					(q_sync_point[0]);
-    for (u32 i = 0; i < HW.Caps.iGPUNum; ++i)
-        _RELEASE(q_sync_point[i]);
+    //for (u32 i = 0; i < HW.Caps.iGPUNum; ++i)
+    //    _RELEASE(q_sync_point[i]);
 
     HWOCC.occq_destroy();
     xr_delete(Models);
@@ -489,13 +488,13 @@ void CRender::reset_begin()
     HWOCC.occq_destroy();
     //_RELEASE					(q_sync_point[1]);
     //_RELEASE					(q_sync_point[0]);
-    for (u32 i = 0; i < HW.Caps.iGPUNum; ++i)
-        _RELEASE(q_sync_point[i]);
+    //for (u32 i = 0; i < HW.Caps.iGPUNum; ++i)
+    //    _RELEASE(q_sync_point[i]);
 }
 
 void CRender::reset_end()
 {
-    D3D_QUERY_DESC qdesc;
+    /*D3D_QUERY_DESC qdesc;
     qdesc.MiscFlags = 0;
     qdesc.Query = D3D_QUERY_EVENT;
     // R_CHK						(HW.pDevice->CreateQuery(&qdesc,&q_sync_point[0]));
@@ -503,7 +502,7 @@ void CRender::reset_end()
     for (u32 i = 0; i < HW.Caps.iGPUNum; ++i)
         R_CHK(HW.pDevice->CreateQuery(&qdesc, &q_sync_point[i]));
     //	Prevent error on first get data
-    HW.pContext->End(q_sync_point[0]);
+    HW.pContext->End(q_sync_point[0]);*/
     // q_sync_point[1]->End();
     // R_CHK						(HW.pDevice->CreateQuery(D3DQUERYTYPE_EVENT,&q_sync_point[0]));
     // R_CHK						(HW.pDevice->CreateQuery(D3DQUERYTYPE_EVENT,&q_sync_point[1]));
@@ -705,25 +704,25 @@ void CRender::set_Object(IRenderable* O) { val_pObject = O; }
 void CRender::rmNear()
 {
     IRender_Target* T = getTarget();
-    D3D_VIEWPORT VP = {0, 0, (float)T->get_width(), (float)T->get_height(), 0, 0.02f};
+    VkViewport VP = {0, 0, (float)T->get_width(), (float)T->get_height(), 0, 0.02f};
 
-    HW.pContext->RSSetViewports(1, &VP);
+    vkCmdSetViewport(HW.context, 0, 1, &VP);
     // CHK_DX				(HW.pDevice->SetViewport(&VP));
 }
 void CRender::rmFar()
 {
     IRender_Target* T = getTarget();
-    D3D_VIEWPORT VP = {0, 0, (float)T->get_width(), (float)T->get_height(), 0.99999f, 1.f};
+    VkViewport VP = {0, 0, (float)T->get_width(), (float)T->get_height(), 0.99999f, 1.f};
 
-    HW.pContext->RSSetViewports(1, &VP);
+    vkCmdSetViewport(HW.context, 0, 1, &VP);
     // CHK_DX				(HW.pDevice->SetViewport(&VP));
 }
 void CRender::rmNormal()
 {
     IRender_Target* T = getTarget();
-    D3D_VIEWPORT VP = {0, 0, (float)T->get_width(), (float)T->get_height(), 0, 1.f};
+    VkViewport VP = {0, 0, (float)T->get_width(), (float)T->get_height(), 0, 1.f};
 
-    HW.pContext->RSSetViewports(1, &VP);
+    vkCmdSetViewport(HW.context, 0, 1, &VP);
     // CHK_DX				(HW.pDevice->SetViewport(&VP));
 }
 

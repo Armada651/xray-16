@@ -96,7 +96,7 @@ public:
     R_LOD LOD;
 #endif
 
-#if defined(USE_DX10) || defined(USE_DX11) && !defined(USE_VK)
+#if defined(USE_DX10) || defined(USE_DX11)
     ref_cbuffer m_aVertexConstants[MaxCBuffers];
     ref_cbuffer m_aPixelConstants[MaxCBuffers];
     ref_cbuffer m_aGeometryConstants[MaxCBuffers];
