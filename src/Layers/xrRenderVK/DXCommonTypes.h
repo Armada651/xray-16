@@ -6,9 +6,9 @@
 class CUnknown : public IUnknown
 {
 public:
-    HRESULT QueryInterface(REFIID riid, void** ppvObject) { return ppvObject ? E_NOINTERFACE : E_POINTER; }
-    ULONG AddRef() { return ++m_ulRef; }
-    ULONG Release()
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) { return ppvObject ? E_NOINTERFACE : E_POINTER; }
+    ULONG STDMETHODCALLTYPE AddRef() { return ++m_ulRef; }
+    ULONG STDMETHODCALLTYPE Release()
     {
         ULONG ref = --m_ulRef;
         if (ref == 0)
