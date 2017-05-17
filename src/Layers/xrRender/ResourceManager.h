@@ -70,7 +70,11 @@ private:
     xr_vector<R_constant_table*> v_constant_tables;
 
 #if defined(USE_DX10) || defined(USE_DX11)
+#ifdef USE_VK
+    xr_vector<vkConstantBuffer*> v_constant_buffer;
+#else
     xr_vector<dx10ConstantBuffer*> v_constant_buffer;
+#endif
     xr_vector<SInputSignature*> v_input_signature;
 #endif //	USE_DX10
 
@@ -132,7 +136,13 @@ public:
     R_constant_table* _CreateConstantTable(R_constant_table& C);
     void _DeleteConstantTable(const R_constant_table* C);
 
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_VK)
+    vkConstantBuffer* _CreateConstantBuffer(const glslang::TType* pTable, u32 size);
+    void _DeleteConstantBuffer(const vkConstantBuffer* pBuffer);
+
+    SInputSignature* _CreateInputSignature(ID3DBlob* pBlob);
+    void _DeleteInputSignature(const SInputSignature* pSignature);
+#elif defined(USE_DX10) || defined(USE_DX11)
     dx10ConstantBuffer* _CreateConstantBuffer(ID3DShaderReflectionConstantBuffer* pTable);
     void _DeleteConstantBuffer(const dx10ConstantBuffer* pBuffer);
 
