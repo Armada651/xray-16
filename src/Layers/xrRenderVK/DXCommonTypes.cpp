@@ -76,3 +76,22 @@ VkResult DXBuffer::Create(const void* pData, VkDeviceSize DataSize, VkBufferUsag
 
     return vkBindBufferMemory(HW.device, m_buffer, m_memory, 0);
 }
+
+DXShader::DXShader()
+    : m_shader()
+{
+}
+
+DXShader::~DXShader()
+{
+    vkDestroyShaderModule(HW.device, m_shader, nullptr);
+}
+
+VkResult DXShader::Create(const uint32_t* pCode, size_t codeSize)
+{
+    VkShaderModuleCreateInfo moduleCreateInfo = {};
+    moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    moduleCreateInfo.codeSize = codeSize;
+    moduleCreateInfo.pCode = pCode;
+    return vkCreateShaderModule(HW.device, &moduleCreateInfo, NULL, &m_shader);
+}

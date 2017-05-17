@@ -801,18 +801,14 @@ static bool create_shader(EShLanguage stage, glslang::TProgram& program, LPCSTR 
     bool _result = false;
     std::vector<u32> spirv;
     glslang::GlslangToSpv(*program.getIntermediate(stage), spirv);
-
-    VkShaderModule module = 0;
-    VkShaderModuleCreateInfo moduleCreateInfo = {};
-    moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    moduleCreateInfo.codeSize = spirv.size() * sizeof(u32);
-    moduleCreateInfo.pCode = spirv.data();
-    VkResult _result = vkCreateShaderModule(HW.device, &moduleCreateInfo, NULL, &module);
+    DXShader* sh = new DXShader();
+    sh->AddRef();
+    VkResult _result = sh->Create(spirv.data(), spirv.size() * sizeof(u32));
 
     if (stage == EShLangFragment)
     {
         SPS* sps_result = (SPS*)result;
-        sps_result->ps = module;
+        sps_result->ps = sh;
 
         if (!_result)
         {
@@ -839,7 +835,7 @@ static bool create_shader(EShLanguage stage, glslang::TProgram& program, LPCSTR 
     else if (stage == EShLangVertex)
     {
         SVS* svs_result = (SVS*)result;
-        svs_result->vs = module;
+        svs_result->vs = sh;
 
         if (!_result)
         {
@@ -880,7 +876,7 @@ static bool create_shader(EShLanguage stage, glslang::TProgram& program, LPCSTR 
     else if (stage == EShLangGeometry)
     {
         SGS* sgs_result = (SGS*)result;
-        sgs_result->gs = module;
+        sgs_result->gs = sh;
 
         if (!_result)
         {

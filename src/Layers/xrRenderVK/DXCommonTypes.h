@@ -41,3 +41,21 @@ private:
 typedef DXBuffer ID3DBuffer;
 typedef DXBuffer ID3DVertexBuffer;
 typedef DXBuffer ID3DIndexBuffer;
+
+class DXShader : public CUnknown
+{
+public:
+    DXShader();
+    virtual ~DXShader();
+
+    VkResult Create(const uint32_t* pCode, size_t codeSize);
+
+    VkShaderModule m_shader;
+};
+
+typedef DXShader ID3DVertexShader;
+typedef DXShader ID3DGeometryShader;
+typedef DXShader ID3DPixelShader;
+typedef DXShader ID3DHullShader;
+typedef DXShader ID3DDomainShader;
+typedef DXShader ID3DComputeShader;

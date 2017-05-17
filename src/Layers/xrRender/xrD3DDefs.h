@@ -29,13 +29,4 @@ typedef IDirect3DStateBlock9 ID3DState;
 
 #endif // USE_DX10
 
-#ifdef USE_VK
-typedef VkShaderModule ID3DVertexShader;
-typedef VkShaderModule ID3DGeometryShader;
-typedef VkShaderModule ID3DPixelShader;
-typedef VkShaderModule ID3DHullShader;
-typedef VkShaderModule ID3DDomainShader;
-typedef VkShaderModule ID3DComputeShader;
-#endif
-
 #endif // xrD3DDefs_included
