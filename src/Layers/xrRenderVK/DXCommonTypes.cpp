@@ -63,7 +63,7 @@ VkResult DXBuffer::Create(const void* pData, VkDeviceSize DataSize, VkBufferUsag
 
     if (pData)
     {
-        uint8_t *pMemory;
+        void* pMemory;
         res = vkMapMemory(HW.device, m_memory, 0, mem_reqs.size, 0, (void **)&pMemory);
 
         if (res != VK_SUCCESS)

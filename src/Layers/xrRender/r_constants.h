@@ -2,7 +2,9 @@
 #define r_constantsH
 #pragma once
 #include "xrCore/xr_resource.h"
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_VK)
+#include "Layers/xrRenderVK/vkConstantBuffer.h"
+#elif defined(USE_DX10) || defined(USE_DX11)
 #include "Layers/xrRenderDX10/dx10ConstantBuffer.h"
 #endif // USE_DX10
 
@@ -150,8 +152,8 @@ private:
     void fatal(LPCSTR s);
 
 #if defined(USE_VK)
-    BOOL parseConstants(glslang::TProgram& program, u32 destination);
-    BOOL parseSampler(glslang::TProgram& program, int index, u32 destination);
+    BOOL parseConstants(const glslang::TType* pTable, u32 destination);
+    BOOL parseResources(const glslang::TProgram* pReflection, u32 destination);
 #elif defined(USE_DX10) || defined(USE_DX11)
     BOOL parseConstants(ID3DShaderReflectionConstantBuffer* pTable, u32 destination);
     BOOL parseResources(ID3DShaderReflection* pReflection, int ResNum, u32 destination);
@@ -173,7 +175,9 @@ private:
 };
 typedef resptr_core<R_constant_table, resptr_base<R_constant_table>> ref_ctable;
 
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_VK)
+#include "../xrRenderVK/vkConstantBuffer_impl.h"
+#elif defined(USE_DX10) || defined(USE_DX11)
 #include "../xrRenderDX10/dx10ConstantBuffer_impl.h"
 #endif // USE_DX10
 

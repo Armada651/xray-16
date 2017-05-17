@@ -9,16 +9,18 @@
 #include "Layers/xrRenderDX10/dx10ConstantBuffer.h"
 
 IC bool p_sort(ref_constant C1, ref_constant C2) { return xr_strcmp(C1->name, C2->name) < 0; }
-BOOL R_constant_table::parseConstants(glslang::TProgram& program, u32 destination)
+BOOL R_constant_table::parseConstants(const glslang::TType* pTable, u32 destination)
 {
-    for (u32 i = 0; i < program.getNumLiveUniformVariables(); ++i)
+    const glslang::TTypeList* TableDesc = pTable->getStruct();
+
+    for (u32 i = 0; i < TableDesc->size(); ++i)
     {
-        const glslang::TType* pType = program.getUniformTType(i);
+        const glslang::TType* pType = TableDesc->at(i).type;
         VERIFY(pType);
 
         // Name
         // LPCSTR   name        =   LPCSTR(ptr+it->Name);
-        LPCSTR name = program.getUniformName(i);
+        LPCSTR name = pType->getFieldName().c_str();
 
         // Type
         // u16      type        =   RC_float;
@@ -28,15 +30,14 @@ BOOL R_constant_table::parseConstants(glslang::TProgram& program, u32 destinatio
         case glslang::EbtFloat: type = RC_float; break;
         case glslang::EbtBool: type = RC_bool; break;
         case glslang::EbtInt: type = RC_int; break;
-        case glslang::EbtSampler: type = RC_sampler; break;
         default: fatal("R_constant_table::parse: unexpected shader variable type.");
         }
 
         // Rindex,Rcount
         // u16      r_index     =   it->RegisterIndex;
         //  Used as byte offset in constant buffer
-        VERIFY(program.getUniformBufferOffset(i) < 0x10000);
-        u16 r_index = u16(program.getUniformBufferOffset(i));
+        VERIFY(pType->getQualifier().layoutOffset < 0x10000);
+        u16 r_index = u16(pType->getQualifier().layoutOffset);
         u16 r_type = u16(-1);
 
         // TypeInfo + class
@@ -55,7 +56,7 @@ BOOL R_constant_table::parseConstants(glslang::TProgram& program, u32 destinatio
             default: fatal("R_constant_table::parse: Unsupported vector size."); break;
             }
         }
-        if (pType->isMatrix())
+        else if (pType->isMatrix())
         {
             switch (pType->getMatrixCols())
             {
@@ -86,11 +87,6 @@ BOOL R_constant_table::parseConstants(glslang::TProgram& program, u32 destinatio
                 break;
             default: fatal("MATRIX_ROWS: unsupported number of Columns"); break;
             }
-        }
-        else if (type == RC_sampler)
-        {
-            parseSampler(program, i, destination);
-            bSkip = TRUE;
         }
         else
         {
@@ -131,74 +127,81 @@ BOOL R_constant_table::parseConstants(glslang::TProgram& program, u32 destinatio
     return TRUE;
 }
 
-BOOL R_constant_table::parseSampler(glslang::TProgram& program, int index, u32 destination)
+BOOL R_constant_table::parseResources(const glslang::TProgram* pReflection, u32 destination)
 {
-    const glslang::TSampler& sampler = program.getUniformTType(index)->getSampler();
+    for (int i = 0; i < pReflection->getNumLiveUniformVariables(); ++i)
+    {
+        const glslang::TType* pType = pReflection->getUniformTType(i);
+        if (!pType->isOpaque())
+            continue;
 
-    LPCSTR name = program.getUniformName(index);
+        const glslang::TSampler& sampler = pType->getSampler();
 
-    u16 type = 0;
-    if (sampler.isTexture())
-        type = RC_dx10texture;
-    else if (sampler.isPureSampler())
-        type = RC_sampler;
-    else if (sampler.isImage())
-        type = RC_dx11UAV;
+        LPCSTR name = pReflection->getUniformName(i);
 
-    // VERIFY(ResDesc.BindCount == 1);
+        u16 type = 0;
+        if (sampler.isTexture())
+            type = RC_dx10texture;
+        else if (sampler.isPureSampler())
+            type = RC_sampler;
+        else if (sampler.isImage())
+            type = RC_dx11UAV;
 
-    // u16  r_index = u16( ResDesc.BindPoint + ((destination&1)? 0 : CTexture::rstVertex) );
+        // VERIFY(ResDesc.BindCount == 1);
 
-    u16 r_index = u16(index);
+        // u16  r_index = u16( ResDesc.BindPoint + ((destination&1)? 0 : CTexture::rstVertex) );
 
-    /*if (destination & RC_dest_pixel)
-    {
-        r_index = u16(ResDesc.BindPoint + CTexture::rstPixel);
-    }
-    else if (destination & RC_dest_vertex)
-    {
-        r_index = u16(ResDesc.BindPoint + CTexture::rstVertex);
-    }
-    else if (destination & RC_dest_geometry)
-    {
-        r_index = u16(ResDesc.BindPoint + CTexture::rstGeometry);
-    }
-    else if (destination & RC_dest_hull)
-    {
-        r_index = u16(ResDesc.BindPoint + CTexture::rstHull);
-    }
-    else if (destination & RC_dest_domain)
-    {
-        r_index = u16(ResDesc.BindPoint + CTexture::rstDomain);
-    }
-    else if (destination & RC_dest_compute)
-    {
-        r_index = u16(ResDesc.BindPoint + CTexture::rstCompute);
-    }
-    else
-    {
-        VERIFY(0);
-    }*/
+        u16 r_index = u16(i);
 
-    ref_constant C = get(name);
-    if (!C)
-    {
-        C = new R_constant(); //.g_constant_allocator.create();
-        C->name = name;
-        C->destination = RC_dest_sampler;
-        C->type = type;
-        R_constant_load& L = C->samp;
-        L.index = r_index;
-        L.cls = type;
-        table.push_back(C);
-    }
-    else
-    {
-        R_ASSERT(C->destination == RC_dest_sampler);
-        R_ASSERT(C->type == type);
-        R_constant_load& L = C->samp;
-        R_ASSERT(L.index == r_index);
-        R_ASSERT(L.cls == type);
+        /*if (destination & RC_dest_pixel)
+        {
+            r_index = u16(ResDesc.BindPoint + CTexture::rstPixel);
+        }
+        else if (destination & RC_dest_vertex)
+        {
+            r_index = u16(ResDesc.BindPoint + CTexture::rstVertex);
+        }
+        else if (destination & RC_dest_geometry)
+        {
+            r_index = u16(ResDesc.BindPoint + CTexture::rstGeometry);
+        }
+        else if (destination & RC_dest_hull)
+        {
+            r_index = u16(ResDesc.BindPoint + CTexture::rstHull);
+        }
+        else if (destination & RC_dest_domain)
+        {
+            r_index = u16(ResDesc.BindPoint + CTexture::rstDomain);
+        }
+        else if (destination & RC_dest_compute)
+        {
+            r_index = u16(ResDesc.BindPoint + CTexture::rstCompute);
+        }
+        else
+        {
+            VERIFY(0);
+        }*/
+
+        ref_constant C = get(name);
+        if (!C)
+        {
+            C = new R_constant(); //.g_constant_allocator.create();
+            C->name = name;
+            C->destination = RC_dest_sampler;
+            C->type = type;
+            R_constant_load& L = C->samp;
+            L.index = r_index;
+            L.cls = type;
+            table.push_back(C);
+        }
+        else
+        {
+            R_ASSERT(C->destination == RC_dest_sampler);
+            R_ASSERT(C->type == type);
+            R_constant_load& L = C->samp;
+            R_ASSERT(L.index == r_index);
+            R_ASSERT(L.cls == type);
+        }
     }
 }
 
@@ -248,11 +251,11 @@ BOOL R_constant_table::parse(void* _desc, u32 destination)
     {
         m_CBTable.reserve(pReflection->getNumLiveUniformBlocks());
         //  Parse single constant table
-        ID3DShaderReflectionConstantBuffer* pTable = 0;
+        const glslang::TType* pTable = 0;
 
         for (u16 iBuf = 0; iBuf < pReflection->getNumLiveUniformBlocks(); ++iBuf)
         {
-            pTable = pReflection->GetConstantBufferByIndex(iBuf);
+            pTable = pReflection->getUniformBlockTType(iBuf);
             if (pTable)
             {
                 //  Encode buffer index into destination
@@ -267,12 +270,14 @@ BOOL R_constant_table::parse(void* _desc, u32 destination)
                      ? CB_BufferPixelShader : (destination&RC_dest_vertex)
                      ? CB_BufferVertexShader : CB_BufferGeometryShader;*/
 
-                parseConstants(*pReflection, updatedDest);
-                ref_cbuffer tempBuffer = RImplementation.Resources->_CreateConstantBuffer(pTable);
+                parseConstants(pTable, updatedDest);
+                ref_cbuffer tempBuffer = RImplementation.Resources->_CreateConstantBuffer(pTable, pReflection->getUniformBlockSize(iBuf));
                 m_CBTable.push_back(cb_table_record(uiBufferIndex, tempBuffer));
             }
         }
     }
+
+    parseResources(pReflection, destination);
 
     std::sort(table.begin(), table.end(), p_sort);
     return TRUE;
