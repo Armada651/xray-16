@@ -84,3 +84,18 @@ public:
 
 typedef DXTexture ID3DBaseTexture;
 typedef VkImageCreateInfo D3D_TEXTURE2D_DESC;
+
+class DXView : public CUnknown
+{
+private:
+    DXView();
+
+public:
+    virtual ~DXView();
+
+    static VkResult Create(DXTexture* texture, DXView** outView);
+
+    VkImageView m_view;
+};
+
+typedef DXView ID3DShaderResourceView;

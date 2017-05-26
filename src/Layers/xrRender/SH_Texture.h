@@ -43,12 +43,20 @@ public:
     IC u32 get_Width()
     {
         desc_enshure();
+#ifdef USE_VK
+        return desc.extent.width;
+#else
         return desc.Width;
+#endif
     }
     IC u32 get_Height()
     {
         desc_enshure();
+#ifdef USE_VK
+        return desc.extent.height;
+#else
         return desc.Height;
+#endif
     }
 
     void video_Sync(u32 _time) { m_play_time = _time; }
@@ -75,7 +83,9 @@ private:
 #if defined(USE_DX10) || defined(USE_DX11)
     void Apply(u32 dwStage);
     void ProcessStaging();
+#ifndef USE_VK
     D3D_USAGE GetUsage();
+#endif
 #endif //	USE_DX10
 
     //	Class data

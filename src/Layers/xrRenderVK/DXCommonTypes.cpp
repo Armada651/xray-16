@@ -199,3 +199,34 @@ VkResult DXTexture::Create(VkImageCreateInfo* createInfo, const void* pData, VkD
 
     return vkAllocateCommandBuffers(HW.device, &allocInfo, &texture->m_copyCmd);
 }
+
+DXView::DXView()
+    : m_view(VK_NULL_HANDLE)
+{
+}
+
+DXView::~DXView()
+{
+    vkDestroyImageView(HW.device, m_view, nullptr);
+}
+
+VkResult DXView::Create(DXTexture* texture, DXView** outView)
+{
+    DXView* view = new DXView();
+    *outView = view;
+    view->AddRef();
+
+    VkImageViewCreateInfo viewInfo = {};
+    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    viewInfo.image = texture->m_image;
+    viewInfo.viewType = (texture->m_createInfo.flags & VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT) ?
+        VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
+    viewInfo.format = texture->m_createInfo.format;
+    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.subresourceRange.baseMipLevel = 0;
+    viewInfo.subresourceRange.levelCount = texture->m_createInfo.mipLevels;
+    viewInfo.subresourceRange.baseArrayLayer = 0;
+    viewInfo.subresourceRange.layerCount = texture->m_createInfo.arrayLayers;
+
+    return vkCreateImageView(HW.device, &viewInfo, nullptr, &view->m_view);
+}
