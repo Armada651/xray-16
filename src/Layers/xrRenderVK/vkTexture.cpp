@@ -373,8 +373,7 @@ ID3DBaseTexture* CRender::texture_load(LPCSTR fRName, u32& ret_msize, bool bStag
     static bool bAllowStaging = !strstr(Core.Params, "-no_staging");
     bStaging &= bAllowStaging;
 
-    ID3DBaseTexture* pTexture2D = new DXTexture();
-    pTexture2D->AddRef();
+    ID3DBaseTexture* pTexture2D = nullptr;
 
     // ID3DBaseTexture* pTexture2D = NULL;
     // IDirect3DCubeTexture9*   pTextureCUBE    = NULL;
@@ -489,7 +488,7 @@ _DDS:
     imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
     imageCreateInfo.extent = { tex.extent().x, tex.extent().y, 1 };
     imageCreateInfo.flags = gli::is_target_cube(tex.target()) ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0;
-    CHK_VK(pTexture2D->Create(tex.data(), tex.size(), imageCreateInfo, bStaging));
+    CHK_VK(DXTexture::Create(&imageCreateInfo, tex.data(), tex.size(), bStaging, &pTexture2D));
 
     if (bStaging)
     {

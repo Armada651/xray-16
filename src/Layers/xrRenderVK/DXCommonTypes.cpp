@@ -13,20 +13,24 @@ DXBuffer::~DXBuffer()
     vkDestroyBuffer(HW.device, m_buffer, nullptr);
 }
 
-VkResult DXBuffer::Create(const void* data, VkDeviceSize dataSize, VkBufferUsageFlags usage)
+VkResult DXBuffer::Create(const void* data, VkDeviceSize dataSize, VkBufferUsageFlags usage, DXBuffer** outBuffer)
 {
-    VkBufferCreateInfo buf_info = {};
-    buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buf_info.usage = usage;
-    buf_info.size = dataSize;
-    buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    VkResult res = vkCreateBuffer(HW.device, &buf_info, NULL, &m_buffer);
+    DXBuffer* buffer = new DXBuffer();
+    *outBuffer = buffer;
+    buffer->AddRef();
+
+    VkBufferCreateInfo bufInfo = {};
+    bufInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufInfo.usage = usage;
+    bufInfo.size = dataSize;
+    bufInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    VkResult res = vkCreateBuffer(HW.device, &bufInfo, NULL, &buffer->m_buffer);
 
     if (res != VK_SUCCESS)
         return res;
 
     VkMemoryRequirements mem_reqs;
-    vkGetBufferMemoryRequirements(HW.device, m_buffer, &mem_reqs);
+    vkGetBufferMemoryRequirements(HW.device, buffer->m_buffer, &mem_reqs);
 
     VkMemoryAllocateInfo alloc_info = {};
     alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -39,7 +43,7 @@ VkResult DXBuffer::Create(const void* data, VkDeviceSize dataSize, VkBufferUsage
         &alloc_info.memoryTypeIndex);
     assert(pass && "No mappable, coherent memory");
 
-    res = vkAllocateMemory(HW.device, &alloc_info, NULL, &m_memory);
+    res = vkAllocateMemory(HW.device, &alloc_info, NULL, &buffer->m_memory);
 
     if (res != VK_SUCCESS)
         return res;
@@ -47,17 +51,17 @@ VkResult DXBuffer::Create(const void* data, VkDeviceSize dataSize, VkBufferUsage
     if (data)
     {
         void* pMemory;
-        res = vkMapMemory(HW.device, m_memory, 0, mem_reqs.size, 0, (void **)&pMemory);
+        res = vkMapMemory(HW.device, buffer->m_memory, 0, mem_reqs.size, 0, (void **)&pMemory);
 
         if (res != VK_SUCCESS)
             return res;
 
         memcpy(pMemory, data, dataSize);
 
-        vkUnmapMemory(HW.device, m_memory);
+        vkUnmapMemory(HW.device, buffer->m_memory);
     }
 
-    return vkBindBufferMemory(HW.device, m_buffer, m_memory, 0);
+    return vkBindBufferMemory(HW.device, buffer->m_buffer, buffer->m_memory, 0);
 }
 
 DXShader::DXShader()
@@ -70,13 +74,17 @@ DXShader::~DXShader()
     vkDestroyShaderModule(HW.device, m_shader, nullptr);
 }
 
-VkResult DXShader::Create(const uint32_t* pCode, size_t codeSize)
+VkResult DXShader::Create(const uint32_t* pCode, size_t codeSize, DXShader** outShader)
 {
+    DXShader* shader = new DXShader();
+    *outShader = shader;
+    shader->AddRef();
+
     VkShaderModuleCreateInfo moduleCreateInfo = {};
     moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     moduleCreateInfo.codeSize = codeSize;
     moduleCreateInfo.pCode = pCode;
-    return vkCreateShaderModule(HW.device, &moduleCreateInfo, NULL, &m_shader);
+    return vkCreateShaderModule(HW.device, &moduleCreateInfo, NULL, &shader->m_shader);
 }
 
 DXTexture::DXTexture()
@@ -95,18 +103,26 @@ DXTexture::~DXTexture()
     vkFreeMemory(HW.device, m_memory, nullptr);
     vkDestroyBuffer(HW.device, m_stagingBuffer, nullptr);
     vkFreeMemory(HW.device, m_stagingMemory, nullptr);
+    vkFreeCommandBuffers(HW.device, HW.cmdPool, 1, &m_copyCmd);
 }
 
-VkResult DXTexture::Create(const void* pData, VkDeviceSize dataSize, VkImageCreateInfo createInfo, bool bStaging)
+VkResult DXTexture::Create(VkImageCreateInfo* createInfo, const void* pData, VkDeviceSize dataSize, bool bStaging, DXTexture** outTexture)
 {
-    VkResult res = vkCreateImage(HW.device, &createInfo, nullptr, &m_image);
+    DXTexture* texture = new DXTexture();
+    *outTexture = texture;
+    texture->AddRef();
+    texture->m_createInfo = *createInfo;
+
+    VkResult res = vkCreateImage(HW.device, &createInfo, nullptr, &texture->m_image);
+    if (res != VK_SUCCESS)
+        return res;
 
     VkMemoryAllocateInfo memAllocInfo = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
     VkMemoryRequirements memReqs = {};
 
     // Get memory requirements for this image 
     // like size and alignment
-    vkGetImageMemoryRequirements(HW.device, m_image, &memReqs);
+    vkGetImageMemoryRequirements(HW.device, texture->m_image, &memReqs);
     // Set memory allocation size to required memory size
     memAllocInfo.allocationSize = memReqs.size;
 
@@ -114,10 +130,14 @@ VkResult DXTexture::Create(const void* pData, VkDeviceSize dataSize, VkImageCrea
     VERIFY(HW.GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &memAllocInfo.memoryTypeIndex));
 
     // Allocate host memory
-    CHK_VK(vkAllocateMemory(HW.device, &memAllocInfo, nullptr, &m_memory));
+    res = vkAllocateMemory(HW.device, &memAllocInfo, nullptr, &texture->m_memory);
+    if (res != VK_SUCCESS)
+        return res;
 
     // Bind allocated image for use
-    CHK_VK(vkBindImageMemory(HW.device, m_image, m_memory, 0));
+    res = vkBindImageMemory(HW.device, texture->m_image, texture->m_memory, 0);
+    if (res != VK_SUCCESS)
+        return res;
 
     if (bStaging)
     {
@@ -128,45 +148,46 @@ VkResult DXTexture::Create(const void* pData, VkDeviceSize dataSize, VkImageCrea
         bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
         bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        CHK_VK(vkCreateBuffer(HW.device, &bufferCreateInfo, nullptr, &m_stagingBuffer));
+        res = vkCreateBuffer(HW.device, &bufferCreateInfo, nullptr, &texture->m_stagingBuffer);
+        if (res != VK_SUCCESS)
+            return res;
 
         // Get memory requirements for the staging buffer (alignment, memory type bits)
-        vkGetBufferMemoryRequirements(HW.device, m_stagingBuffer, &memReqs);
+        vkGetBufferMemoryRequirements(HW.device, texture->m_stagingBuffer, &memReqs);
 
         memAllocInfo.allocationSize = memReqs.size;
         // Get memory type index for a host visible buffer
         VERIFY(HW.GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &memAllocInfo.memoryTypeIndex));
 
-        CHK_VK(vkAllocateMemory(HW.device, &memAllocInfo, nullptr, &m_stagingMemory));
-        CHK_VK(vkBindBufferMemory(HW.device, m_stagingBuffer, m_stagingMemory, 0));
+        res = vkAllocateMemory(HW.device, &memAllocInfo, nullptr, &texture->m_stagingMemory);
+        res = vkBindBufferMemory(HW.device, texture->m_stagingBuffer, texture->m_stagingMemory, 0);
 
-        // Copy texture data into staging buffer
-        void* data;
-        CHK_VK(vkMapMemory(HW.device, m_stagingMemory, 0, memReqs.size, 0, (void**)&data));
-        memcpy(data, pData, dataSize);
-        vkUnmapMemory(HW.device, m_stagingMemory);
+        if (pData)
+        {
+            // Copy texture data into staging buffer
+            void* data;
+            res = vkMapMemory(HW.device, texture->m_stagingMemory, 0, memReqs.size, 0, (void**)&data);
+            if (res != VK_SUCCESS)
+                return res;
+            memcpy(data, pData, dataSize);
+            vkUnmapMemory(HW.device, texture->m_stagingMemory);
+        }
     }
     else
     {
-        // Get sub resource layout
-        // Mip map count, array layer, etc.
-        VkImageSubresource subRes = {};
-        subRes.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        if (pData)
+        {
+            // Map image memory
+            void *data;
+            res = vkMapMemory(HW.device, texture->m_memory, 0, memReqs.size, 0, &data);
+            if (res != VK_SUCCESS)
+                return res;
 
-        VkSubresourceLayout subResLayout;
-        void *data;
+            // Copy image data into memory
+            memcpy(data, pData, dataSize);
 
-        // Get sub resources layout 
-        // Includes row pitch, size offsets, etc.
-        vkGetImageSubresourceLayout(HW.device, m_image, &subRes, &subResLayout);
-
-        // Map image memory
-        CHK_VK(vkMapMemory(HW.device, m_memory, 0, memReqs.size, 0, &data));
-
-        // Copy image data into memory
-        memcpy(data, pData, dataSize);
-
-        vkUnmapMemory(HW.device, m_memory);
+            vkUnmapMemory(HW.device, texture->m_memory);
+        }
     }
 
     // This command buffer should be used by the texture loader to transition image layouts
@@ -176,5 +197,5 @@ VkResult DXTexture::Create(const void* pData, VkDeviceSize dataSize, VkImageCrea
     allocInfo.commandPool = HW.cmdPool;
     allocInfo.commandBufferCount = 1;
 
-    vkAllocateCommandBuffers(HW.device, &allocInfo, &m_copyCmd);
+    return vkAllocateCommandBuffers(HW.device, &allocInfo, &texture->m_copyCmd);
 }

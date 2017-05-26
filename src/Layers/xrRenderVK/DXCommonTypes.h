@@ -25,11 +25,14 @@ private:
 
 class DXBuffer : public CUnknown
 {
-public:
+private:
     DXBuffer();
+
+public:
     virtual ~DXBuffer();
 
-    VkResult Create(const void* pData, VkDeviceSize dataSize, VkBufferUsageFlags usage);
+    static VkResult Create(const void* pData, VkDeviceSize dataSize,
+        VkBufferUsageFlags usage, DXBuffer** outBuffer);
 
     VkBuffer m_buffer;
     VkDeviceMemory m_memory;
@@ -41,11 +44,13 @@ typedef DXBuffer ID3DIndexBuffer;
 
 class DXShader : public CUnknown
 {
-public:
+private:
     DXShader();
+
+public:
     virtual ~DXShader();
 
-    VkResult Create(const uint32_t* pCode, size_t codeSize);
+    static VkResult Create(const uint32_t* pCode, size_t codeSize, DXShader** outShader);
 
     VkShaderModule m_shader;
 };
@@ -59,11 +64,14 @@ typedef DXShader ID3DComputeShader;
 
 class DXTexture : public CUnknown
 {
-public:
+private:
     DXTexture();
+
+public:
     virtual ~DXTexture();
 
-    VkResult Create(const void* pData, VkDeviceSize dataSize, VkImageCreateInfo createInfo, bool bStaging);
+    static VkResult Create(VkImageCreateInfo* createInfo, const void* pData,
+        VkDeviceSize dataSize, bool bStaging, DXTexture** outTexture);
 
     VkImage m_image;
     VkDeviceMemory m_memory;
