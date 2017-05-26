@@ -2,9 +2,6 @@
 #define vkR_Backend_Runtime_included
 #pragma once
 
-#include "StateManager/dx10StateManager.h"
-#include "StateManager/dx10ShaderResourceStateCache.h"
-
 IC void CBackend::set_xform(u32 ID, const Fmatrix& M)
 {
     stat.xforms++;

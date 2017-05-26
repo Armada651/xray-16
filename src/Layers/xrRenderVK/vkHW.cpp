@@ -58,7 +58,7 @@ void CHW::CreateD3D()
     createInfo.pApplicationInfo = &app_info;
 
     vkCreateInstance(&createInfo, NULL, &instance);
-    initResources(resources);
+    InitResources(resources);
 }
 
 void CHW::DestroyD3D()
@@ -328,15 +328,7 @@ void CHW::CreateDevice(HWND m_hWnd, bool move_window)
     cmdPoolInfo.flags = 0;
 
     CHK_VK(vkCreateCommandPool(device, &cmdPoolInfo, NULL, &cmdPool));
-
-    // Create the command buffer from the command pool
-    VkCommandBufferAllocateInfo cmd = {};
-    cmd.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    cmd.commandPool = cmdPool;
-    cmd.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    cmd.commandBufferCount = 1;
-
-    CHK_VK(vkAllocateCommandBuffers(device, &cmd, &context));
+    vkGetDeviceQueue(device, graphicsQueueFamilyIndex, 0, &queue);
 }
 
 void CHW::DestroyDevice()
@@ -455,7 +447,7 @@ void CHW::updateWindowProps(HWND m_hWnd)
     SetForegroundWindow(m_hWnd);
 }
 
-void CHW::initResources(TBuiltInResource &Resources)
+void CHW::InitResources(TBuiltInResource &Resources)
 {
     Resources.maxLights = 32;
     Resources.maxClipPlanes = 6;
@@ -549,6 +541,23 @@ void CHW::initResources(TBuiltInResource &Resources)
     Resources.limits.generalSamplerIndexing = 1;
     Resources.limits.generalVariableIndexing = 1;
     Resources.limits.generalConstantMatrixVectorIndexing = 1;
+}
+
+bool CHW::GetMemoryType(uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex)
+{
+	// Search memtypes to find first index with those properties
+	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
+		if ((typeBits & 1) == 1) {
+			// Type is available, does it match user properties?
+			if ((memoryProperties.memoryTypes[i].propertyFlags & requirements_mask) == requirements_mask) {
+				*typeIndex = i;
+				return true;
+			}
+		}
+		typeBits >>= 1;
+	}
+	// No memory types matched, return failure
+	return false;
 }
 
 struct _uniq_mode

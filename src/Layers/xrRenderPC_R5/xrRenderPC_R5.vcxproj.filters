@@ -750,9 +750,6 @@
     <ClCompile Include="..\xrRenderDX10\3DFluid\dx103DFluidRenderer.cpp">
       <Filter>3DFluid</Filter>
     </ClCompile>
-    <ClCompile Include="..\xrRenderDX10\dx10Texture.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\xrRender\PSLibrary.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -1325,6 +1322,9 @@
     </ClCompile>
     <ClCompile Include="..\xrRenderVK\vkr_constants_cache.cpp">
       <Filter>Refactored\Execution &amp; 3D\Shaders\Resources\vk_R_shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderVK\vkTexture.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

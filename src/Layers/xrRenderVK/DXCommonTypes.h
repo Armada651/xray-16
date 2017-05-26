@@ -29,13 +29,10 @@ public:
     DXBuffer();
     virtual ~DXBuffer();
 
-    VkResult Create(const void* pData, VkDeviceSize DataSize, VkBufferUsageFlags Usage);
+    VkResult Create(const void* pData, VkDeviceSize dataSize, VkBufferUsageFlags usage);
 
     VkBuffer m_buffer;
     VkDeviceMemory m_memory;
-
-private:
-    bool MemoryTypeFromProperties(VkPhysicalDeviceMemoryProperties properties, uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
 };
 
 typedef DXBuffer ID3DBuffer;
@@ -59,3 +56,23 @@ typedef DXShader ID3DPixelShader;
 typedef DXShader ID3DHullShader;
 typedef DXShader ID3DDomainShader;
 typedef DXShader ID3DComputeShader;
+
+class DXTexture : public CUnknown
+{
+public:
+    DXTexture();
+    virtual ~DXTexture();
+
+    VkResult Create(const void* pData, VkDeviceSize dataSize, VkImageCreateInfo createInfo, bool bStaging);
+
+    VkImage m_image;
+    VkDeviceMemory m_memory;
+    VkBuffer m_stagingBuffer;
+    VkDeviceMemory m_stagingMemory;
+    VkCommandBuffer m_copyCmd;
+
+    VkImageCreateInfo m_createInfo;
+};
+
+typedef DXTexture ID3DBaseTexture;
+typedef VkImageCreateInfo D3D_TEXTURE2D_DESC;

@@ -62,9 +62,7 @@ public:
     VkSwapchainKHR swapchain;
     VkSurfaceKHR surface;
     VkCommandPool cmdPool;
-
-    // TODO: A command buffer manager should handle multiple buffers
-    VkCommandBuffer context;
+    VkQueue queue;
 
     CHWCaps Caps;
     TBuiltInResource resources;
@@ -128,7 +126,8 @@ public:
     stats_manager stats_manager;
 #endif
 #if defined(USE_VK)
-    void initResources(TBuiltInResource &Resources);
+    void InitResources(TBuiltInResource &Resources);
+    bool GetMemoryType(uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
 #elif defined(USE_DX10) || defined(USE_DX11)
     void UpdateViews();
     DXGI_RATIONAL selectRefresh(u32 dwWidth, u32 dwHeight, DXGI_FORMAT fmt);

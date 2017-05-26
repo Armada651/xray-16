@@ -174,7 +174,7 @@ float ps_r2_gloss_factor = 4.0f;
 #include "xrEngine/XR_IOConsole.h"
 #include "xrEngine/xr_ioc_cmd.h"
 
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_DX10) || defined(USE_DX11) && !defined(USE_VK)
 #include "Layers/xrRenderDX10/StateManager/dx10SamplerStateCache.h"
 #endif // USE_DX10
 

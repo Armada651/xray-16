@@ -3,7 +3,7 @@
 #pragma once
 #include "xrCore/xr_resource.h"
 #include "tss_def.h"
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_DX10) || defined(USE_DX11) && !defined(USE_VK)
 #include "Layers/xrRenderDX10/StateManager/dx10State.h"
 #endif //	USE_DX10
 
@@ -94,7 +94,7 @@ typedef resptr_core<SState, resptr_base<SState>> ref_state;
 //////////////////////////////////////////////////////////////////////////
 struct ECORE_API SDeclaration : public xr_resource_flagged
 {
-#if defined(USE_DX10) || defined(USE_DX11)
+#if defined(USE_DX10) || defined(USE_DX11) && !defined(USE_VK)
     //	Maps input signature to input layout
     xr_map<ID3DBlob*, ID3DInputLayout*> vs_to_layout;
     xr_vector<D3D_INPUT_ELEMENT_DESC> dx10_dcl_code;

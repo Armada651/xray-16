@@ -57,7 +57,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USE_VK;MSAA_DX10_1;MSAA_SAMPLES=4;USE_MSAA;GBUFFER_OPTIMIZATION;_USRDLL;XRRENDER_R5_EXPORTS;USE_DX11;USE_RESOURCE_DEBUGGER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)Externals\OpenAutomate\inc;$(SolutionDir)Externals\nvapi;$(SolutionDir)Externals\AGS_SDK;$(SolutionDir)Externals\glslang\glslang\Public;$(SolutionDir)Externals\glslang\glslang\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Externals\OpenAutomate\inc;$(SolutionDir)Externals\nvapi;$(SolutionDir)Externals\AGS_SDK;$(SolutionDir)Externals\glslang\glslang\Public;$(SolutionDir)Externals\glslang\glslang\Include;$(SolutionDir)Externals\gli;$(SolutionDir)Externals\gli\external\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -79,7 +79,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>USE_VK;USE_DX11;_USRDLL;XRRENDER_R5_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)Externals\OpenAutomate\inc;$(SolutionDir)Externals\nvapi;$(SolutionDir)Externals\AGS_SDK;$(SolutionDir)Externals\glslang\glslang\Public;$(SolutionDir)Externals\glslang\glslang\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Externals\OpenAutomate\inc;$(SolutionDir)Externals\nvapi;$(SolutionDir)Externals\AGS_SDK;$(SolutionDir)Externals\glslang\glslang\Public;$(SolutionDir)Externals\glslang\glslang\Include;$(SolutionDir)Externals\gli;$(SolutionDir)Externals\gli\external\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -297,7 +297,6 @@
     <ClCompile Include="..\xrRenderDX10\dx10SH_RT.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10SH_Texture.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10StateUtils.cpp" />
-    <ClCompile Include="..\xrRenderDX10\dx10Texture.cpp" />
     <ClCompile Include="..\xrRenderDX10\dx10TextureUtils.cpp" />
     <ClCompile Include="..\xrRenderDX10\MSAA\dx10MSAABlender.cpp" />
     <ClCompile Include="..\xrRenderDX10\StateManager\dx10SamplerStateCache.cpp" />
@@ -371,6 +370,7 @@
     <ClCompile Include="..\xrRenderVK\vkResourceManager_Scripting.cpp" />
     <ClCompile Include="..\xrRenderVK\vkr_constants.cpp" />
     <ClCompile Include="..\xrRenderVK\vkr_constants_cache.cpp" />
+    <ClCompile Include="..\xrRenderVK\vkTexture.cpp" />
     <ClCompile Include="..\xrRender\Animation.cpp" />
     <ClCompile Include="..\xrRender\blenders\Blender.cpp" />
     <ClCompile Include="..\xrRender\blenders\Blender_Palette.cpp" />
