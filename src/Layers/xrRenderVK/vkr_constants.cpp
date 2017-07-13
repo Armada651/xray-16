@@ -151,36 +151,36 @@ BOOL R_constant_table::parseResources(const glslang::TProgram* pReflection, u32 
 
         // u16  r_index = u16( ResDesc.BindPoint + ((destination&1)? 0 : CTexture::rstVertex) );
 
-        u16 r_index = u16(i);
+        u16 r_index = u16(-1);
 
-        /*if (destination & RC_dest_pixel)
+        if (destination & RC_dest_pixel)
         {
-            r_index = u16(ResDesc.BindPoint + CTexture::rstPixel);
+            r_index = u16(i + CTexture::rstPixel);
         }
         else if (destination & RC_dest_vertex)
         {
-            r_index = u16(ResDesc.BindPoint + CTexture::rstVertex);
+            r_index = u16(i + CTexture::rstVertex);
         }
         else if (destination & RC_dest_geometry)
         {
-            r_index = u16(ResDesc.BindPoint + CTexture::rstGeometry);
+            r_index = u16(i + CTexture::rstGeometry);
         }
         else if (destination & RC_dest_hull)
         {
-            r_index = u16(ResDesc.BindPoint + CTexture::rstHull);
+            r_index = u16(i + CTexture::rstHull);
         }
         else if (destination & RC_dest_domain)
         {
-            r_index = u16(ResDesc.BindPoint + CTexture::rstDomain);
+            r_index = u16(i + CTexture::rstDomain);
         }
         else if (destination & RC_dest_compute)
         {
-            r_index = u16(ResDesc.BindPoint + CTexture::rstCompute);
+            r_index = u16(i + CTexture::rstCompute);
         }
         else
         {
             VERIFY(0);
-        }*/
+        }
 
         ref_constant C = get(name);
         if (!C)
